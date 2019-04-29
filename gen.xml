@@ -1,0 +1,21 @@
+<noun>
+	<alive>
+		<sentient>
+		</sentient>
+		<asentient>
+			<animals>
+				<mamal></mamal>
+				<reptile></reptile>
+				<insect>{insect.txt}</insect>
+			</animals>
+			<plants>
+				<vine>[vine.txt]</vine>
+				<shrub></shrub>
+				<tree></tree>
+				<flower></flower>
+			</plants>
+		</asentient>
+	</alive>
+	<dead>
+	</dead>
+</noun>
