@@ -1,0 +1,19 @@
+chicken
+turkey
+robin
+blue jay
+cardinal
+raven
+crow
+eagle
+hawk
+falcon
+vulture
+pigeon
+seagal
+crane
+pelecon
+duck
+albatros
+finch
+humming bird

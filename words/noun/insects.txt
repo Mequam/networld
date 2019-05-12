@@ -1,0 +1,31 @@
+ant
+aphid
+wasp
+bee
+butterfly
+spider
+ladybug
+beetle
+praying mantise
+worm
+slug
+leach
+inect
+bug
+caterpiller
+mosquito
+grub
+nat
+fly
+dragonfly
+moth
+lice
+damselflies
+earwigs
+flea
+grasshopper
+lacewing
+stick bug
+mayflie
+stik bug
+termite

@@ -1,0 +1,7 @@
+territorial
+carnivorus
+herbivorus
+omnivorus
+insectivorus
+parasitic
+social

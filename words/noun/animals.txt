@@ -1,0 +1,4 @@
+carnivor
+herbavor
+insectivor
+scavanger
