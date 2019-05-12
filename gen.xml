@@ -1,19 +1,37 @@
-<noun>
+<noun>	
+	<word type='adj'>words/adj/noun.txt</word>
+	<word type='color'>words/adj/color.txt</word>
 	<alive>
-		<sentient>
-		</sentient>
+		<word type='adj'>words/adj/alive.txt</word>
+		<sentient></sentient>
 		<asentient>
-			<animals>
-				<mamal></mamal>
-				<reptile></reptile>
-				<insect>{insect.txt}</insect>
-			</animals>
-			<plants>
-				<vine>[vine.txt]</vine>
-				<shrub></shrub>
-				<tree></tree>
-				<flower></flower>
-			</plants>
+			<animal>
+				<word type='adj'>words/adj/animal.txt</word>
+				<mamal>
+					<word type='noun'>words/noun/mamals.txt</word>
+					<pets></pets>
+				</mamal>
+				<insect>
+					<word type='noun'>words/noun/insects.txt</word>
+				</insect>
+				<fish>
+					<word type='noun'>words/noun/fish.txt</word>
+					<shark>
+						<word type='noun'>words/noun/sharks.txt</word>
+					</shark>
+					<ray>
+						<word type='noun'>words/noun/rays.txt</word>
+					</ray>
+				</fish>
+				<bird>
+					<word type='adj'>words/adj/birds.txt</word>
+					<word type='noun'>words/noun/birds.txt</word>
+					<penguin>
+						<word type='adj'>words/adj/penguins.txt</word>
+						<word type='noun'>words/noun/penguins.txt</word>	
+					</penguin>
+				</bird>
+			</animal>		
 		</asentient>
 	</alive>
 	<dead>
