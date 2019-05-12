@@ -1,15 +1,38 @@
 <noun>	
 	<word type='adj'>words/adj/noun.txt</word>
 	<word type='color'>words/adj/color.txt</word>
-	<alive>
+	<life>
+		<word type='verb'>words/verb/alive.txt</word>
 		<word type='adj'>words/adj/alive.txt</word>
-		<sentient></sentient>
+		<sentient>
+			<word type='adj'>words/adj/sentient/sentients.txt</word>
+			<worker>
+				<word type='noun'>words/noun/sentient/workers.txt</word>
+			</worker>
+			<royal>
+				<democracy>
+					<word type='noun'>words/noun/sentient/dem.txt</word>		
+				</democracy>
+				<monarchy>
+					<word type='noun'>words/noun/sentient/monarch.txt</word>	
+				</monarchy>
+				<dictator>
+					<word type='noun'>words/noun/sentient/dict.txt</word>
+				</dictator>
+
+			</royal>
+			<warrior>
+				<word type='noun'>words/noun/sentient/warriors.txt</word>
+			</warrior>
+			<scoundral>
+				<word type='noun'>words/noun/sentient/scoundrals.txt</word>
+			</scoundral>
+		</sentient>
 		<asentient>
 			<animal>
 				<word type='adj'>words/adj/animal.txt</word>
 				<mamal>
 					<word type='noun'>words/noun/mamals.txt</word>
-					<pets></pets>
 				</mamal>
 				<insect>
 					<word type='noun'>words/noun/insects.txt</word>
@@ -31,9 +54,35 @@
 						<word type='noun'>words/noun/penguins.txt</word>	
 					</penguin>
 				</bird>
-			</animal>		
+			</animal>
+			<monster>
+				<word type='noun'>words/noun/monster/monsters.txt</word>
+				<word type='adj'>words/adj/monster/monsters.txt</word>
+			</monster>
+			<plant>
+				<tree>
+					<word type='noun'>words/noun/trees.txt</word>
+					<fruit>
+						<word type='noun'>words/noun/trees.txt</word>
+					</fruit>
+				</tree>
+				<flower>
+				</flower>
+				<vine>
+				</vine>
+			</plant>		
 		</asentient>
-	</alive>
+	</life>
 	<dead>
+		<place>
+			<natural>
+			</natural>
+			<created>
+				<word type='noun'>words/noun/places/places.txt</word>
+				<kingdom>
+					<word type='noun'>words/noun/places/kingdoms.txt</word>
+				</kingdom>
+			</created>
+		</place>
 	</dead>
 </noun>

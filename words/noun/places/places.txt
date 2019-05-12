@@ -1,0 +1,7 @@
+kingdom
+town
+outpost
+empire
+providence
+territory
+realm

@@ -1,0 +1,12 @@
+knight
+figher
+warrior
+brawler
+archer
+sniper
+sharpshooter
+hunter
+ranger
+monk
+ninja
+pirate

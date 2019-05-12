@@ -2,6 +2,9 @@
 import random
 import xml.etree.ElementTree as ET
 import parse
+import menu
+import sys
+
 def pickRandom(arr):
 	#this function returns a random element from an array
 	return arr[random.randrange(0,len(arr))]
@@ -138,10 +141,10 @@ def schema(string):
 			e = True
 		elif split_s[2] == 'sup_e':
 			e = True
-		elif split_s[2] != 'sup':
-			#let them specify the default option if they feel so inclined,
-			#even though we dont actualy change anything for it
-			print('[ERROR] unrecognised constant!')
+		elif split_s[2] == 't':
+			s = [getNodeTag(root,split_s[0])]
+		else:
+			print('[ERROR] unrecognised consspltant!')
 			return 'None'
 
 	#this is a code snipit that we are going to use down bellow, its shelterd off as its own function to make our code easier to read
@@ -181,4 +184,16 @@ def schema(string):
 
 tree = ET.parse('gen.xml')
 root = tree.getroot()
-print(schema('{noun:color:sub} {bird:noun:sub}s dot the sky, waiting for the perfect oppourtunity to strike unfortionet {animal:noun:sub}, eating below them'))	
+@menu.menu('main')
+def main(arr):
+	try:
+		print(schema(arr))
+		return True
+	except:
+		return False
+if __name__ == '__main__':
+	if len(sys.argv) == 1:
+		main()
+	else:
+		print(schema(squish(sys.argv[1:],' ')))
+

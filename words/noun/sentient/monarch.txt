@@ -1,0 +1,9 @@
+prince
+princess
+king
+queen
+knight
+duch
+duchess
+mayor
+lord

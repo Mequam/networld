@@ -1,15 +1,3 @@
-red
-scarlet
-crimson
-purple
-violet
-blue
-indigo
-azule
-cyan
-green
-yellow
-golden
 big
 large
 massive
