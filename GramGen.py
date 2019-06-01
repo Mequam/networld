@@ -22,7 +22,7 @@ def pickRandom(arr):
 def get_text(filepath):
 	f = open(filepath,'r')
 	words = []
-	line = f.readline()
+	line = f.readline()[0:-1]
 	while line:
 		words.append(line)
 		line = f.readline()[0:-1]
@@ -89,9 +89,9 @@ def getSub(start):
 def getSubTag(tag):
 	node = getNodeTag(root,tag)			
 	return getSub(node)
-def getSupTag(tag):
-	node = getNodeTag(root,tag)
-	return getSup(root,node)
+#def getSupTag(tag):
+#	node = getNodeTag(root,tag)
+#	return getSup(root,node)
 #the following two functions wrap the above two functions to test if a given node is inside of the sub or sup of a given node
 #with the same tag
 def testSupTag(j,expr,f_arr,default,parenth,args):
@@ -115,9 +115,8 @@ def testSubTag(j,expr,f_arr,default,parenth,args):
 	else:
 		return False
 def testTag(j,expr,f_arr,default,parenth,args):
-	tag = bool_parse.parse(expr[j+3:len(expr)],f_arr,default,parenth,args)
-	target = getNodeTag(args[0],tag)
-	if target.tag == tag:
+	tag = bool_parse.parse(expr[j+3:len(expr)],f_arr,default,parenth,args)	
+	if args[1].tag == tag:
 		return True
 	else:
 		return False 
@@ -134,39 +133,47 @@ def getTextNode(node,Type):
 			return get_text(child.text)
 	#note technicaly a required statement, but it helps keep things readable
 	return None
+class generator:
+	def __init__(self,xml_file,local_arr=[('sub',testSubTag),('sup',testSupTag),('tag',testTag)]):
+		tree = ET.parse(xml_file)
+		self.root = tree.getroot()
+		self.local_arr=local_arr
+	def schema(self,string):
+		#this function just makes sure that the decorator function is not getting passed the self argument
+		@parse.get_enclosed(['{','}'])
+		def schema_real(string):
+			split_s = string.split(':')
+			words = []
 
-tree = ET.parse('gen.xml')
-root = tree.getroot()
-
-local_arr = [('sub',testSubTag),('sup',testSupTag),('tag',testTag)]
-
-@parse.get_enclosed(['{','}'])
-def schema(string):
-	split_s = string.split(':')
-	words = []
-	
-	@span_tree
-	def loadNodes(node,args):	
-		if bool_parse.parse_safe(split_s[0],bool_parse.arr,bool_parse.Default,['(',')'],[root,node]):
-			text = getTextNode(node,args[0])
-			if text:
-				#the given node has text that we can load
-				args[1] += text
-	loadNodes(root,[split_s[1],words])
-	return pickRandom(words)
+			@span_tree
+			def loadNodes(node,args):	
+				if node.tag == 'word':
+					#dont continue if we are given a word node
+					return None
+				cond = bool_parse.parse_safe(split_s[0],bool_parse.arr+self.local_arr,bool_parse.Default,['(',')'],[self.root,node])	
+				#print(f'{node.tag} {cond}')
+				if cond:
+					text = getTextNode(node,args[0])
+					if text:
+						#the given node has text that we can load
+						#print(text)
+						args[1] += text
+			loadNodes(self.root,[split_s[1],words])
+			return pickRandom(words)
+		return schema_real(string)
 
 
-print(schema('{sup animal:noun}'))
-
+g = generator('gen.xml')
+print(g.schema('{sub animal && !(sub fish||tag fish):noun}'))
 @menu.menu('main')
 def main(arr):
 	try:
-		print(schema(arr))
+		print(g.schema(arr))
 		return True
 	except:
 		return False
-if __name__ == '__main__':
-	if len(sys.argv) == 1:
-		main()
-	else:
-		print(schema(squish(sys.argv[1:],' ')))
+#if __name__ == '__main__':
+#	if len(sys.argv) == 1:
+#		main()
+#	else:
+#	#	print(g.schema(squish(sys.argv[1:],' ')))

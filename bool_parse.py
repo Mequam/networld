@@ -49,7 +49,7 @@ def parse_safe(expr,f_arr,default,parenth=['(',')'],args=[]):
 #to make a function that works with the parse function above, it either needs to be an exit case or to call parse again
 #and the j variable points to the FIRST index of the string that represents this operation
 def And(j,expr,f_arr,default,parenth,args):
-	return parse(expr[0:j],f_arr,default,parenth,args) and parse(expr[j+2:len(expr)],f_arr,default,parenth)
+	return parse(expr[0:j],f_arr,default,parenth,args) and parse(expr[j+2:len(expr)],f_arr,default,parenth,args)
 def Or(j,expr,f_arr,default,parenth,args):
 	return parse(expr[0:j],f_arr,default,parenth,args) or parse(expr[j+2:len(expr)],f_arr,default,parenth,args)	
 def Not(j,expr,f_arr,default,parenth,args):
