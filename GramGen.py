@@ -4,10 +4,30 @@ import xml.etree.ElementTree as ET
 import parse
 import menu
 import sys
-
+import bool_parse
+def span_tree(func):
+	#this is a recursive function that runs the given function on each of the nodes starting on the first node
+	def ret_val(node,args):
+		#run the function that we wrapp with the given arguments		
+		func(node,args)		
+		for child in node:		
+			#the given node contains a child, take a recursive step down
+			ret_val(child,args)
+		#we made it past the for loop, the node does not contain any children so return true on success
+		return True
+	return ret_val
 def pickRandom(arr):
 	#this function returns a random element from an array
 	return arr[random.randrange(0,len(arr))]
+def get_text(filepath):
+	f = open(filepath,'r')
+	words = []
+	line = f.readline()
+	while line:
+		words.append(line)
+		line = f.readline()[0:-1]
+	return words
+#this function gets the absolute value of a node
 def getAbs(root,tag,path=''):
     	#need to get it to return none if the path that it follows does not contain the ta
 	path += '/' + root.tag
@@ -22,6 +42,7 @@ def getAbs(root,tag,path=''):
 				return lowpath
 	#none of our children or us have the tag, return None
 		return None
+#this function takes the root of the tree and a tag and returns the node that has that tag
 def getNodeTag(root,tag):
 	#need to get it to return none if the path that it follows does not contain the ta	
 	if root.tag == tag:
@@ -35,26 +56,24 @@ def getNodeTag(root,tag):
 				return mbyNode
 	#none of our children or us have the tag, return None
 		return None
+#this function take an array and concatanates the values together using delimiter
 def squish(arr,delim):
 	ret_val = ''
 	for word in arr:
 		ret_val += word + delim
 	return ret_val[:-1]
+#this function gets the super class of a given node
 def getSup(root,start):
-	#this function gets the super class of a given node
 	path = getAbs(root,start.tag)	
 	split_path = path.split('/')
 	superc = []
+	wp = split_path[1:-1]
+	for tag in wp:
+		superc.append(getNodeTag(root,tag))
+	return superc
 
-	wp = split_path[2:]
-	i = len(wp)
-	while i > 0:
-		superc.append(root.find('./' + squish(wp[0:i],'/')))
-		i -= 1
-	return [root]+superc
-def getSub(start):
-	#print(f'[getSub] getting the sub of {start.tag}')
-	#this function gets the subclass of a given node that contain a node
+#this function gets the subclass of a given node that contain a node
+def getSub(start):		
 	#any leaf on the bottom of the tree is ignored
 	fa = start.findall('.//')
 	i = 0
@@ -63,7 +82,8 @@ def getSub(start):
 			del fa[i]
 		else:
 			i += 1
-	return fa + [start]
+	return fa 
+
 #these are wrapper functions that use the above functions but instead of getting passed nodes they get passed tags
 #not the most efficient thing in the world to go about getting the sub and supper classes this way as we find the nodes 
 def getSubTag(tag):
@@ -72,118 +92,72 @@ def getSubTag(tag):
 def getSupTag(tag):
 	node = getNodeTag(root,tag)
 	return getSup(root,node)
+#the following two functions wrap the above two functions to test if a given node is inside of the sub or sup of a given node
+#with the same tag
+def testSupTag(j,expr,f_arr,default,parenth,args):
+	#get the tag that we want to use for the node
+	tag = bool_parse.parse(expr[j+3:len(expr)],f_arr,default,parenth,args)	
+	#get the target node for the sub or sup classes
+	target = getNodeTag(args[0],tag)
 
-#it would be really cool to make a generator class plus it would help with the decorators
-#this parser does not clime the xml tree, it only looks for the file specified by {}
-@parse.get_enclosed(['[',']'])
-def pickSup(string):
-	#[attri]
-	s = string.split(':')
-@parse.get_enclosed(['{','}'])
-def make_rand(string):
-    words = []
-    try:
-        f = open(string)
-        data = f.readline()
-        while data:
-            words.append(data)
-            data = f.readline()
-        f.close()
-        return words[random.randrange(0,len(words))][:-1]
-    except:
-        return 'None'
-@parse.get_enclosed(['(',')'])
-def make_randWTREE(string):
-    return getAbs(root,string)
-@parse.get_enclosed()
-def randStr(string):
-    #need a way to specify the file that we want to parse, perhaps we only load the file into memory once?
-    #or perhaps we make a generator class?
-    #for now we just parse in the given file for quick testing   
-    for node in root.findall('.//' + string):
-        return make_rand(node.text)
-    return ''
-def get_text(fname):
-	f = open(fname,'r')
-	data = f.readline()[:-1]
-	words = [data]
-	while data:
-		#make sure that we dont read in newlines
-		data = f.readline()[:-1]
-		if data != '':
-			#append the data that we read to the words array
-			words.append(data)	
-	f.close()
-	return words
-		
-	
-@parse.get_enclosed(['{','}'])
-def schema(string):
-	#this function takes a string and returns a random value from
-	#the given node based on the syntax of the string
-	#{tag:attr:[sub | sup | sup_e | sub_e]} <- syntax the function uses to find the sup
-	
-	#default to using the super class and inclusive
-	sup = True
-	e = False
-
-	split_s = string.split(':')	
-	if len(split_s) < 2 or len(split_s) > 3:
-		#the programer or user did not supply us with a valid mapping
-		#so return an error to the string
-		return 'None'
-	if len(split_s) == 3:
-		#we have one of the optional arguments so use that to parse out our mode
-		if split_s[2] == 'sub':
-			sup = False
-		elif split_s[2] == 'sub_e':
-			sup = False
-			e = True
-		elif split_s[2] == 'sup_e':
-			e = True
-		elif split_s[2] == 't':
-			s = [getNodeTag(root,split_s[0])]
-		else:
-			print('[ERROR] unrecognised consspltant!')
-			return 'None'
-
-	#this is a code snipit that we are going to use down bellow, its shelterd off as its own function to make our code easier to read
-	def removeTag(arr,tag):
-		for i in range(0,len(arr)):
-			if arr[i].tag == tag:
-				del arr[i]
-				#we assume each node has no equal in the tree so break off here
-				break
-		return arr
-	if sup and e:
-		#exlive super class
-		s = getSupTag(split_s[0])
-		s = removeTag(s,split_s[0])
-	elif sup and not e:
-		#inclusive superclass
-		s = getSupTag(split_s[0])
-	elif not sup and e:
-		#exlusive subclass	
-		s = getSubTag(split_s[0])
-		s = removeTag(s,split_s[0])		
+	#if the node that we are testing is inside of the set that we are given
+	if args[1] in getSup(args[0],target):
+		return True
 	else:
-		#inclusive subclass
-		s = getSubTag(split_s[0])	
-	words = []
-	for node in s:
-		#alright we have the node that we want now we just need to use it
-		for child in node:
-			if child.tag == 'word' and child.attrib['type'] == split_s[1]:
-				
-				try:	
-					words += get_text(child.text)
-				except:
-					print('[WARNING] unable to load ' + child.text)
-	#pick a single word from the pool of random words that we get from the schema value
-	return pickRandom(words)
+		return False
+def testSubTag(j,expr,f_arr,default,parenth,args):
+	#get the tag that we want to test from the recursive function
+	tag = bool_parse.parse(expr[j+3:len(expr)],f_arr,default,parenth,args)
+	#get the target for the sub or sup class from getNodeTag 
+	target = getNodeTag(args[0],tag)
+	if args[1] in getSub(target):
+		return True
+	else:
+		return False
+def testTag(j,expr,f_arr,default,parenth,args):
+	tag = bool_parse.parse(expr[j+3:len(expr)],f_arr,default,parenth,args)
+	target = getNodeTag(args[0],tag)
+	if target.tag == tag:
+		return True
+	else:
+		return False 
+def getTextNode(node,Type):
+	#this function returns the text inside of a given node
+	#marked by the word tag that has the given type
+	#if for some strange reason we are given a word node to begin with we
+	#use that instead of searching through the nodes children for the required tag
+	if node.tag == 'word' and node.attrib['type'] == Type:
+		#the node that we were given was a word file pointer, so use its text	
+		return get_text(node.text)
+	for child in node:
+		if child.tag == 'word' and child.attrib['type'] == Type:
+			return get_text(child.text)
+	#note technicaly a required statement, but it helps keep things readable
+	return None
 
 tree = ET.parse('gen.xml')
 root = tree.getroot()
+
+local_arr = [('sub',testSubTag),('sup',testSupTag),('tag',testTag)]
+
+@parse.get_enclosed(['{','}'])
+def schema(string):
+	split_s = string.split(':')
+	words = []
+	
+	@span_tree
+	def loadNodes(node,args):	
+		if bool_parse.parse_safe(split_s[0],bool_parse.arr,bool_parse.Default,['(',')'],[root,node]):
+			text = getTextNode(node,args[0])
+			if text:
+				#the given node has text that we can load
+				args[1] += text
+	loadNodes(root,[split_s[1],words])
+	return pickRandom(words)
+
+
+print(schema('{sup animal:noun}'))
+
 @menu.menu('main')
 def main(arr):
 	try:
@@ -196,4 +170,3 @@ if __name__ == '__main__':
 		main()
 	else:
 		print(schema(squish(sys.argv[1:],' ')))
-

@@ -67,6 +67,7 @@
 					</fruit>
 				</tree>
 				<flower>
+					<word type='noun'>words/noun/flowers.txt</word>
 				</flower>
 				<vine>
 				</vine>
