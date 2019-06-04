@@ -1,0 +1,7 @@
+school
+academy
+college
+library
+lab
+museum
+observitory

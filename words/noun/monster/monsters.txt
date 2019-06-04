@@ -1,7 +1,7 @@
 laviathan
 shade
 undead
-mass
+mass of limbs
 plauge nutuerer
 mindless one
 glitch
@@ -12,3 +12,11 @@ silent follower
 oppressive mist
 soul reaper
 demon
+silent stalker
+watcher
+listener
+shadow
+stain
+dragon
+nightmare
+silent follower

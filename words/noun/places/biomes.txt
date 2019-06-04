@@ -1,0 +1,7 @@
+desert
+forest
+tundera
+jungle
+plains
+swamp
+ocean

@@ -1,0 +1,17 @@
+house
+shack
+cabin
+log cabin
+cottage
+igloo
+tent
+van
+shanty
+roost
+bungalow
+chalet
+yurt
+houseboat
+treehouse
+chateau
+dome house

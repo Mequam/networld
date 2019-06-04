@@ -1,0 +1,7 @@
+inn
+hotel
+roadhouse
+community house
+townhome
+apartment
+condominium

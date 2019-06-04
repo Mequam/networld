@@ -1,0 +1,9 @@
+castle
+tower
+keep
+palace
+fortress
+citadel
+stronghold
+keep
+safehold

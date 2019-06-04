@@ -1,0 +1,11 @@
+stone
+sand
+sandstone
+brick
+mud
+dirt
+cobblestone
+glass
+wood
+plastic
+cement

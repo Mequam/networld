@@ -134,13 +134,14 @@ def getTextNode(node,Type):
 	#note technicaly a required statement, but it helps keep things readable
 	return None
 class generator:
-	def __init__(self,xml_file,local_arr=[('sub',testSubTag),('sup',testSupTag),('tag',testTag)]):
+	def __init__(self,xml_file,parenth=['{','}'],local_arr=[('sub',testSubTag),('sup',testSupTag),('tag',testTag)]):
 		tree = ET.parse(xml_file)
 		self.root = tree.getroot()
 		self.local_arr=local_arr
+		self.parenth=parenth
 	def schema(self,string):
 		#this function just makes sure that the decorator function is not getting passed the self argument
-		@parse.get_enclosed(['{','}'])
+		@parse.get_enclosed(self.parenth)
 		def schema_real(string):
 			split_s = string.split(':')
 			words = []
@@ -151,6 +152,7 @@ class generator:
 					#dont continue if we are given a word node
 					return None
 				cond = bool_parse.parse_safe(split_s[0],bool_parse.arr+self.local_arr,bool_parse.Default,['(',')'],[self.root,node])	
+				#this statement is here in case you need to debug the generator, as it has proven quite usefull on many occasions
 				#print(f'{node.tag} {cond}')
 				if cond:
 					text = getTextNode(node,args[0])
@@ -161,19 +163,24 @@ class generator:
 			loadNodes(self.root,[split_s[1],words])
 			return pickRandom(words)
 		return schema_real(string)
+	def entry(self,filename):
+		#this fuction takes a file with a list of schemas and returns the parsed version of a random schema from the list,
+		#it serves as an entery point for each generator
+		return self.schema(pickRandom(get_text(filename)))
 
 
-g = generator('gen.xml')
-print(g.schema('{sub animal && !(sub fish||tag fish):noun}'))
-@menu.menu('main')
-def main(arr):
-	try:
-		print(g.schema(arr))
-		return True
-	except:
-		return False
-#if __name__ == '__main__':
-#	if len(sys.argv) == 1:
-#		main()
-#	else:
-#	#	print(g.schema(squish(sys.argv[1:],' ')))
+if __name__ == '__main__':
+	g = generator('gen.xml')
+	
+	@menu.menu('main')
+	def main(arr):	
+		try:
+			print(g.schema(arr))
+			return True
+		except:
+			return False
+	
+	if len(sys.argv) == 1:
+		main()
+	else:
+		print(g.schema(squish(sys.argv[1:],' ')))

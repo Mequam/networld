@@ -1,0 +1,26 @@
+catacomb
+sewer
+crypt
+aqua duct
+forge
+barn
+postoffice
+stables
+dumpyard
+hall
+farm
+prison
+jail
+dungeon
+hospital
+fire pit
+backery
+theater
+auditorium
+colosium
+arena
+zoo
+chicken coop
+pigpen
+bullpen
+training grounds

@@ -1,8 +1,10 @@
 <noun>	
 	<word type='adj'>words/adj/noun.txt</word>
+	<word type='adv'>words/adv/noun.txt</word>
 	<word type='color'>words/adj/color.txt</word>
 	<life>
 		<word type='verb'>words/verb/alive.txt</word>
+		<word type='verb_ing'>words/verb_ing/alive.txt</word>
 		<word type='adj'>words/adj/alive.txt</word>
 		<sentient>
 			<word type='adj'>words/adj/sentient/sentients.txt</word>
@@ -31,6 +33,7 @@
 		<asentient>
 			<animal>
 				<word type='adj'>words/adj/animal.txt</word>
+				<word type='noun_clause'>schems/noun_clause/life/animals.scm</word>
 				<mamal>
 					<word type='noun'>words/noun/mamals.txt</word>
 				</mamal>
@@ -61,28 +64,66 @@
 			</monster>
 			<plant>
 				<tree>
+					<word type='noun_clause'>schems/noun_clause/plants/trees.scm</word>
 					<word type='noun'>words/noun/trees.txt</word>
 					<fruit>
-						<word type='noun'>words/noun/trees.txt</word>
+						<word type='noun'>words/noun/fruit_trees.txt</word>
 					</fruit>
 				</tree>
 				<flower>
 					<word type='noun'>words/noun/flowers.txt</word>
 				</flower>
 				<vine>
+					<word type='noun'>words/noun/vines.txt</word>
 				</vine>
 			</plant>		
 		</asentient>
 	</life>
 	<dead>
+		<material>
+			<gem><word type='noun'>words/noun/materials/gems.txt</word></gem>
+			<metal><word type='noun'>words/noun/materials/metals.txt</word></metal>
+			<word type='noun'>words/noun/materials/misc.txt</word>
+		</material>
 		<place>
 			<natural>
+				<biome>
+					<word type='noun_clause'>schems/noun_clause/biomes/biomes.scm</word>
+					<word type='noun'>words/noun/places/biomes.txt</word>
+				</biome>
+				<landmark>
+					<word type='noun'>words/noun/places/landmarks.txt</word>
+					<water_l>words/noun/places/rivers.txt</water_l>
+				</landmark>
 			</natural>
 			<created>
 				<word type='noun'>words/noun/places/places.txt</word>
-				<kingdom>
-					<word type='noun'>words/noun/places/kingdoms.txt</word>
-				</kingdom>
+				<building>
+					<word type='noun_clause'>schems/noun_clause/buildings/build.scm</word>
+					<word type='arc'>words/adj/buildings/arc.txt</word>
+					<residential>
+						<house>
+							<word type='noun'>words/noun/buildings/houses.txt</word>
+							<manor>	
+								<word type='noun'>words/noun/buildings/manor.txt</word>
+							</manor>
+							<castle>
+								<word type='noun'>words/noun/buildings/castle.txt</word>
+							</castle>
+							<inn>
+								<word type='noun'>words/noun/buildings/inn.txt</word>
+							</inn>
+						</house>
+					</residential>
+					<infast>	
+						<edu><word type='noun'>words/noun/buildings/edu.txt</word></edu>
+						<relig_b><word type='noun'>words/noun/buildings/relig.txt</word></relig_b>
+						<army_b><word type='noun'>words/noun/buildings/army.txt</word></army_b>
+						<shop><word type='noun'>words/noun/buildings/shop.txt</word></shop>
+						<water_b><word type='noun'>words/noun/buildings/water.txt</word></water_b>
+					</infast>
+					<word type='noun'>words/noun/buildings/build.txt</word>	
+				</building>
 			</created>
 		</place>
 	</dead>

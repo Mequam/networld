@@ -1,0 +1,5 @@
+baracks
+armory
+mess
+fort
+bunker

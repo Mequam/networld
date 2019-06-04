@@ -1,10 +1,19 @@
-oak
-wheeping willow
-tree
-acacia
-kapok
-wonderboom
-dragon tree
-baobo
-cypress
-birch
+oak tree
+aspen
+birchwood
+silverwood
+black walnut
+walnut tree
+pine tree
+holly tree
+beech tree
+elm tree
+cyprus tree
+sweetgum tree
+viburnum
+pistache
+chesnut tree
+hackberry
+redwood
+redbud
+dogwood tree

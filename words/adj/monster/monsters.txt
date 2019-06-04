@@ -13,3 +13,5 @@ flesh mad
 vile
 possesed
 mad
+corrupted
+undead

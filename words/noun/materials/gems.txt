@@ -1,0 +1,31 @@
+diamond
+ruby
+emerald
+saphire
+topaz
+amathyst
+quartz
+bloodstone
+obsidian
+jasper
+aventurine
+garnet
+agate
+citrine
+tiger's eye
+moonstone
+pearl
+black onyx
+camelian
+citrine
+zircon
+peridot
+lapis lazuli
+opal
+apache tears
+aqua marine
+turquoise
+sodalite
+beryl
+tourmaline
+sugilite
