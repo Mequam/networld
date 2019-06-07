@@ -5,3 +5,6 @@ jungle
 plains
 swamp
 ocean
+hills
+mountains
+savana

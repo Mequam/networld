@@ -2,6 +2,29 @@
 	<word type='adj'>words/adj/noun.txt</word>
 	<word type='adv'>words/adv/noun.txt</word>
 	<word type='color'>words/adj/color.txt</word>
+	<node>
+		<node_animal></node_animal>
+		<node_plant></node_plant>
+		<node_biome>
+			<word type='sent'>node/desc.snt</word>
+		</node_biome>
+		<encounter>
+			<animal_enc>
+				<word type='sent'>node/encounter/animals.snt</word>
+			</animal_enc>
+			<plant_enc>
+				<word type='sent'>node/encounter/plants.snt</word>
+			</plant_enc>
+		</encounter>
+	</node>
+	<sense>
+		<sense_far>
+			<word type='verb'>words/verb/senses_far.txt</word>
+		</sense_far>
+		<sense_close>
+			<word type='verb'>words/verb/senses_close.txt</word>
+		</sense_close>
+	</sense>
 	<life>
 		<word type='verb'>words/verb/alive.txt</word>
 		<word type='verb_ing'>words/verb_ing/alive.txt</word>
@@ -124,6 +147,10 @@
 					</infast>
 					<word type='noun'>words/noun/buildings/build.txt</word>	
 				</building>
+				<town>
+					<word type='noun'>words/noun/towns.txt</word>
+					<word type='noun_clause'>schems/noun_clause/towns.scm</word>
+				</town>
 			</created>
 		</place>
 	</dead>

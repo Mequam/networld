@@ -1,0 +1,7 @@
+town
+city
+kingdom
+urban sprawl
+exurb
+suberb
+village

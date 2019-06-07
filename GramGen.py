@@ -167,11 +167,37 @@ class generator:
 		#this fuction takes a file with a list of schemas and returns the parsed version of a random schema from the list,
 		#it serves as an entery point for each generator
 		return self.schema(pickRandom(get_text(filename)))
-
+	def addWordList(self,parent_tag,fname,Type,text_arr):
+		#this function adds a new word tag to the tree
+	
+	#first write the text_arr array to the given file
+		f = open(fname,'w')
+		for string in text_arr:
+			#write each of the words in the word array to the given fil
+			try:
+				f.write(string + '\n')
+			except:
+				#just in case we are given somthing other than strings in the array, best to make sure that we close the file
+				f.close()
+				return False
+		f.close()
+	#then create the word array and store it inside of the node with the given tag
+		#create a word element and give it text pointing to the file containing the word list
+		word = ET.Element('word',type=Type)
+		word.text = fname
+		#add our element to the root element
+		getNodeTag(self.root,parent_tag).append(word)
+		return True
+	
+	def addNode(self,parent_tag,tag):
+		node = ET.Element(tag)
+		getNodeTag(self.root,parent_tag).append(node)
+		return True
+			
 
 if __name__ == '__main__':
 	g = generator('gen.xml')
-	
+		
 	@menu.menu('main')
 	def main(arr):	
 		try:

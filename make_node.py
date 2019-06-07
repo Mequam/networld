@@ -1,6 +1,7 @@
 import random
+from uuid import getnode as get_mac
 import GramGen
-
+import sys
 def cat2num(cat):
     if cat == 'insane':
         return 11
@@ -39,19 +40,72 @@ def roll_mapp(mapp,x=None):
 
 def get_rand(arr):
     return arr[random.randrange(0,len(arr))]
-
 class node:
-    def toString(self,debug=False):
-        print(f'tempature: {self.temp}')
-        print(f'slope: {self.slope}')
-        print(f'flatness: {self.flat}')
-        print(f'hostility: {self.hostil}')
-    def __init__(self,x,y,mac):
-        self.seed=(mac-1)*400+(y-1)*20+x
-        random.seed(self.seed)
-class Terrain:
-	def __init__(self,g,entry):
-		self.desc = g.entry(entry)
+	def __init__(self,x,y,g):
+		self.x = x
+		self.y = y
+		self.gen = g
+		print('the mac is ' + str(int(get_mac())))
+		self.seed = (get_mac()-1)*400+(y-1)*20+x
+		#init the seed for this node
+		print('seeding with ' + str(self.seed))
+		random.seed(self.seed)	
+		
+		self.biome = self.gen.schema('{tag biome:noun_clause}')
+		self.gen.addWordList('node_biome','node/biome.txt','node_noun',[self.biome])
+
+		self.animals = []
+		for i in range(0,random.randrange(0,11)):
+			self.animals.append(self.gen.schema('{tag animal:noun_clause}'))
+		self.gen.addWordList('node_animal','node/animals.txt','node_noun',self.animals)
+
+		self.plants = []	
+		for i in range(0,random.randrange(0,5)):
+			self.plants.append(self.gen.schema('{sub plant:noun_clause}'))
+		self.gen.addWordList('node_plant','node/plants.txt','node_noun',self.plants)
+		
+		self.towns = []
+		while True:
+			if random.randrange(0,100) < 30:
+				self.towns.append(town(self.gen))
+			else:
+				break
+	def enc(self):
+		if len(self.plants) > 0 and len(self.animals) > 0:
+			return self.gen.schema('{sub encounter:sent}')
+		elif len(self.plants) > 0:
+			return self.gen.schema('{tag plant_enc:sent}')
+		elif len(self.animals) > 0:
+			return self.gen.schema('{tag animal_enc:sent}')
+		else:
+			return True
+	def desc(self):
+		return self.gen.schema('{tag node_biome:sent}')
+class town:
+	def __init__(self,g):
+		self.buildings = []
+		for i in range(1,11):
+			self.buildings.append(g.schema('{tag building:noun_clause}'))	
+		self.desc = g.schema('{tag town:noun_clause}')	 
 g = GramGen.generator('gen.xml')
-t = Terrain(g,'schems/noun_clause/biomes/biomes.scm')
-print(t.desc)
+test = node(int(sys.argv[1]),int(sys.argv[2]),g)
+sep = '-'*20
+print('biome')
+print(sep)
+print(test.biome)
+print('\nanimal')
+print(sep)
+for animal in test.animals:
+	print(animal)
+print('\nplants')
+print(sep)
+for plant in test.plants:
+	print(plant)
+print('\ntowns')
+print(sep)
+for town in test.towns:
+	print(town.desc)
+	for building in town.buildings:
+		print('\t' + building)
+print(test.enc())
+print(test.desc())
