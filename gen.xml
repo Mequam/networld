@@ -1,7 +1,7 @@
 <noun>	
 	<word type='adj'>words/adj/noun.txt</word>
 	<word type='adv'>words/adv/noun.txt</word>
-	<word type='color'>words/adj/color.txt</word>
+	<word type='color'>words/adj/color.txt</word>	
 	<node>
 		<node_animal></node_animal>
 		<node_plant></node_plant>
@@ -9,9 +9,9 @@
 			<word type='sent'>node/desc.snt</word>
 		</node_biome>
 		<encounter>
-			<animal_enc>
+		<animal_enc>
 				<word type='sent'>node/encounter/animals.snt</word>
-			</animal_enc>
+		</animal_enc>
 			<plant_enc>
 				<word type='sent'>node/encounter/plants.snt</word>
 			</plant_enc>
@@ -154,4 +154,26 @@
 			</created>
 		</place>
 	</dead>
+	<state>
+		<target>
+			<word type='state'>state/target.txt</word>
+		</target>
+		<check>
+			<stat>
+				<word type='state'>state/stats.txt</word>
+			</stat>
+			<specif>
+				<word type='state'>state/specif.txt</word>
+			</specif>
+			<ind>
+				<word type='state'>state/ind.txt</word>
+			</ind>
+		</check>
+		<frag>
+			<word type='state'>state/frag.scm</word>
+		</frag>
+		<letter>
+			<word type='state'>state/letter.txt</word>
+		</letter>
+	</state>
 </noun>
