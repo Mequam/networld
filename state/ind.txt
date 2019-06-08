@@ -1,0 +1,4 @@
+HP
+Thac0
+AC
+speed

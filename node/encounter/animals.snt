@@ -1,0 +1,4 @@
+you {tag sense_far:verb} a {tag node_animal:node_noun} {sub noun:verb_ing} a {sub node:node_noun}
+a {tag node_animal:node_noun} attacks you!
+you feel a {tag node_animal:node_noun} graze against you
+a {tag node_animal:node_noun} {sub noun:verb}s in the distance

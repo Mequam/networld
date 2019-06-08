@@ -87,25 +87,3 @@ class town:
 		for i in range(1,11):
 			self.buildings.append(g.schema('{tag building:noun_clause}'))	
 		self.desc = g.schema('{tag town:noun_clause}')	 
-g = GramGen.generator('gen.xml')
-test = node(int(sys.argv[1]),int(sys.argv[2]),g)
-sep = '-'*20
-print('biome')
-print(sep)
-print(test.biome)
-print('\nanimal')
-print(sep)
-for animal in test.animals:
-	print(animal)
-print('\nplants')
-print(sep)
-for plant in test.plants:
-	print(plant)
-print('\ntowns')
-print(sep)
-for town in test.towns:
-	print(town.desc)
-	for building in town.buildings:
-		print('\t' + building)
-print(test.enc())
-print(test.desc())

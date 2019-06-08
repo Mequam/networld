@@ -1,0 +1,4 @@
+a {sub noun:adj} {tag node_plant:node_noun} grows on a {sub noun:adj} {sub landmark || tag landmark:noun}
+the {tag node_plant:node_noun}s around you suddenly begin to {sub noun:verb}
+a {tag node_plant:node_noun} seems to be hiding somthing interesting
+you see a glint inside of a distant {tag node_plant:node_noun}

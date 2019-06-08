@@ -1,0 +1,6 @@
+str
+dex
+con
+int
+wis
+char

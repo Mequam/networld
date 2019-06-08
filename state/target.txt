@@ -1,0 +1,8 @@
+TargetLineRange
+TargetRadiusRange
+TargetEyeContact
+TargetTouch
+TargetSight
+TargetPuncture
+TargetThrough {sub material:noun}
+TargetLine

@@ -3,7 +3,6 @@ import random
 import xml.etree.ElementTree as ET
 import parse
 import menu
-import sys
 import bool_parse
 def span_tree(func):
 	#this is a recursive function that runs the given function on each of the nodes starting on the first node
@@ -193,20 +192,3 @@ class generator:
 		node = ET.Element(tag)
 		getNodeTag(self.root,parent_tag).append(node)
 		return True
-			
-
-if __name__ == '__main__':
-	g = generator('gen.xml')
-		
-	@menu.menu('main')
-	def main(arr):	
-		try:
-			print(g.schema(arr))
-			return True
-		except:
-			return False
-	
-	if len(sys.argv) == 1:
-		main()
-	else:
-		print(g.schema(squish(sys.argv[1:],' ')))
