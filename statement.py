@@ -14,6 +14,9 @@ def diegen(string,lvl):
 			return str(dice) + 'd' + str(sides)
 	return dice(string)
 def dieSchema(g,lvl,schema='{tag frag:state}'):
-	return diegen(g.schema(schema),lvl)
-g = GramGen.generator('gen.xml')
-print(dieSchema(g,20))
+	return diegen(g.schema(schema),lvl) 
+#def parse(statement)
+
+if __name__ == '__main__':
+	g = GramGen.generator('gen.xml')
+	print(dieSchema(g,20))

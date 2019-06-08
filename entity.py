@@ -1,6 +1,6 @@
 import random
 import make_node
-import menu as test
+import menu as Menu 
 import pickle
 
 def makeStat():
@@ -45,9 +45,12 @@ class Bieng(Entity):
 		self.con = makeStat() + random.randrange(1,lvl)
 		self.int = makeStat() + random.randrange(1,lvl)
 		self.wis = makeStat() + random.randrange(1,lvl)
-		self.cha = makeStat() + random.randrange(1,lvl)
+		self.cha = makeStat() + random.randrange(1,lvl)	
 		self.hp = random.randrange(10,lvl*100)
 		self.ac = random.randrange(18-lvl,20)-10
+
+		#this array contains all of the effects placed on the bieng 
+		self.eff = []	
 	def statStr(self):
 		ret_val = ''
 		ret_val += 'str:' + str(self.str) + '\n'
@@ -84,7 +87,7 @@ class Player(Bieng):
 			return False
 	def save(self,fname=None):
 		if fname == None:
-			fname = 'players/' + self.name + '.pkl'
+			fname = 'saves/players/' + self.name + '.pkl'
 		f = open(fname,'wb')
 		pickle.dump(self.__dict__,f,pickle.HIGHEST_PROTOCOL)
 		f.close()
@@ -92,13 +95,28 @@ class Player(Bieng):
 	def rand(self):
 		Bieng.__init__(self,0,0,2)	
 	def prompt(self):
+		#get the players name before we do anything else
+		print('[new_player] what would you like your name to be?')	
+		self.name = input('(name)> ')
+		print('[new_player] are you sure that you want ' + self.name + ' to be your name?')
+		ansr = input('(y/n)> ')
+
+		while ansr != 'y':
+			self.name = input('(name)> ')
+			print('[new_player] are you sure that you want ' + self.name + ' to be your name?')
+			ansr = input('(y/n)> ')
+		print('[new_player] set name to ' + self.name)
+		print('-'*20+'\n')	
+	
+		#initilise the rolls of the new player
 		rolls = []
 		for i in range(0,6):
 			rolls.append(makeStat())
 		print('[new_player] type the stat you want to set folloewd by the index number of your roll')
 		print('[new_player] type q to finish and create the new charicter')	
 		print(rolls)	
-		@test.menu('new_player')
+		
+		@Menu.menu('new_player')
 		def menu(string):	
 			split_s = string.split(' ')
 
@@ -163,17 +181,41 @@ class Player(Bieng):
 			print('[new_player] ERROR! not all stats have been set')
 			menu()
 class Party(Entity):
-	def __init__(self):
+	def __init__(self,name=None,players=None):
 		self.x = 1
 		self.y = 1
-		self.players = []
+		if name == None:
+			self.name = 'potato_party'
+		else:
+			self.name = name
+		if players == None:
+			self.players = []
+		else:
+			self.players = players
 	def addPlayer(self,player):
 		self.players.append(player)
 	def addPlayers(self,players):
 		self.players += players
-test = Party()
-test.load('test.pkl')
-for player in test.players:
-	print(player.name)
-	print('-'*20)
-	print(player.statStr())
+if __name__ == '__main__':
+	#p = Party('TeamAvatar')
+	
+	#ang = Player('Ang')
+	#ang.rand()
+	#katara = Player('Katara')
+	#katara.rand()
+	#soka = Player('Soka')
+	#soka.rand
+
+	#p.addPlayers([ang,katara,soka])
+
+	#p.save('saves/parties/' + p.name)
+	
+	p = Party()
+	p.load('saves/parties/test')
+	print(p.name)
+	for player in p.players:
+		print(player.name)
+		print('-'*20)
+		print(player.statStr())
+	#test = Player()
+	#test.prompt()
