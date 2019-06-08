@@ -55,12 +55,6 @@ def getNodeTag(root,tag):
 				return mbyNode
 	#none of our children or us have the tag, return None
 		return None
-#this function take an array and concatanates the values together using delimiter
-def squish(arr,delim):
-	ret_val = ''
-	for word in arr:
-		ret_val += word + delim
-	return ret_val[:-1]
 #this function gets the super class of a given node
 def getSup(root,start):
 	path = getAbs(root,start.tag)	

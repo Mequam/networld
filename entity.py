@@ -1,3 +1,4 @@
+import parse
 import random
 import make_node
 import menu as Menu 
@@ -35,6 +36,24 @@ class Entity:
 		pickle.dump(self.__dict__,f,pickle.HIGHEST_PROTOCOL)
 		f.close()
 		return True	
+class Town(Entity):
+	#each town needs to have a description and a culture
+	#what would the culture look like?
+	def __init__(self,culture):
+		self.buildings = []
+		for i in range(1,11):
+			self.buildings.append(g.schema('{tag building:noun_clause}'))	
+		self.desc = g.schema('{tag town:noun_clause}')	 
+class Culture:
+	def __init__(self):
+		#generate a list of traits that the culture uses
+		#this will be used when creating Towns
+		
+		#need a list of common profesions
+		#need a description
+		#need a list of common arcitectures
+		#need a list of allowed adj
+		print('fake')
 class Bieng(Entity):
 	#this class represents anything that the players can through damage at
 	def __init__(self,x,y,lvl):
@@ -192,6 +211,30 @@ class Party(Entity):
 			self.players = []
 		else:
 			self.players = players
+	def prompt(self):
+		#the user wants to start a new party, so prompt them for the desired information
+	
+	#get the parties name, make absolutly sure that the name is one the user wants
+		self.name = input('what should the parties name be?\n(name)> ')
+		inp = parse.selectPrompt('[new party] are you sure thats what you want the parties name to be?\n(y/n)> ',['y','n'])
+		while inp != 'y':
+			self.name = input('what should the parties name be?\n(name)> ')
+			inp = parse.selectPrompt('[new party] are you sure thats what you want the parties name to be?(y/n)> \n(y/n)',['y','n'])
+		
+		print('[new party] set party name to ' + self.name)
+		print('\n[new party] now we add players to the party!')
+		while True:
+			charic = Player()
+			charic.prompt()
+			self.addPlayer(charic)
+			print('-'*20+'\n')
+			if parse.selectPrompt('[new party] want to stop making charicters?\n(y/n)> ',['y','n']) == 'y':
+				break
+		print('[new party] saving the party!')
+		try:
+			self.save('saves/parties/'+self.name)
+		except:
+			print('[new party] OH NO, unable to save the party :(')	
 	def addPlayer(self,player):
 		self.players.append(player)
 	def addPlayers(self,players):
@@ -211,7 +254,7 @@ if __name__ == '__main__':
 	#p.save('saves/parties/' + p.name)
 	
 	p = Party()
-	p.load('saves/parties/test')
+	p.load('saves/parties/Venturians')
 	print(p.name)
 	for player in p.players:
 		print(player.name)

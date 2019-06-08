@@ -17,6 +17,14 @@
 			</plant_enc>
 		</encounter>
 	</node>
+	<sylable>
+			<vowel>
+				<word type='letter'>words/letters.txt</word>
+			</vowel>
+			<cons>
+				<word type='letter'>words/cons.txt</word>
+			</cons>
+	</sylable>
 	<sense>
 		<sense_far>
 			<word type='verb'>words/verb/senses_far.txt</word>

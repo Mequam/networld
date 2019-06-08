@@ -23,3 +23,34 @@ def get_enclosed(parenth=['[',']']):
                 return parse(expr[:first_index] + fun(expr[first_index + 1:second_index]) + expr[second_index + 1:],parenth2)
         return parse
     return decor
+
+#this function takes an array and concatanates the values together using delimiter
+def squish(arr,delim):
+	ret_val = ''
+	for word in arr:
+		ret_val += word + delim
+	return ret_val[:-1]
+#this function is a simple function to prompt the user and force them to pick a letter from the given list
+def selectPrompt(prompt,options):
+	i = input(prompt)
+	while i not in options:
+		i = input('('+squish(options,'/')+')> ')
+	return i
+#this function loads an array from a pickle
+def loadArr(filename):
+	try:
+		f = open(filename,'rb')
+		arr = pickle.load(f)
+		f.close()
+		return arr
+	except:
+		return False
+#this function saves an array to a pickle
+def saveArr(arr,filename):
+	try:
+		f = open(filename,'wb')
+		pickle.dump(arr,f,pickle.HIGHEST_PROTOCOL)
+		f.close()
+		return True
+	except:
+		return False
