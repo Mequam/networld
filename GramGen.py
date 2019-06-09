@@ -127,11 +127,16 @@ def getTextNode(node,Type):
 	#note technicaly a required statement, but it helps keep things readable
 	return None
 class generator:
-	def __init__(self,xml_file,parenth=['{','}'],local_arr=[('sub',testSubTag),('sup',testSupTag),('tag',testTag)]):
-		tree = ET.parse(xml_file)
-		self.root = tree.getroot()
+	def __init__(self,xml_file=None,parenth=['{','}'],local_arr=[('sub',testSubTag),('sup',testSupTag),('tag',testTag)]):
+		if xml_file != None:
+			tree = ET.parse(xml_file)
+			self.root = tree.getroot()
+		else:
+			self.root = ET.Element('root')
 		self.local_arr=local_arr
 		self.parenth=parenth
+		self.lists = {}
+			
 	def schema(self,string):
 		#this function just makes sure that the decorator function is not getting passed the self argument
 		@parse.get_enclosed(self.parenth)

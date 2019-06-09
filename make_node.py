@@ -1,7 +1,7 @@
 import random
 from uuid import getnode as get_mac
 import GramGen
-import sys
+import nameGen
 def cat2num(cat):
     if cat == 'insane':
         return 11
@@ -21,6 +21,45 @@ def get_cat(x=None):
 
 def get_rand(arr):
     return arr[random.randrange(0,len(arr))]
+class Culture:
+	def __init__(self,f=None):
+		if f == None:
+			#generate a new culture with the generator
+			g = GramGen.generator('gen.xml')
+			self.arcs = []
+			for i in range(0,random.randrange(1,5)):
+				#now this could generate the same style arcitecture more than once,
+				#but thats ok, it simply means the culture this represents uses that style more
+				#often
+				self.arcs.append(g.schema('{tag building || sub building:arc}'))
+			self.builds = []
+			for i in range(0,random.randrange(2,5)):
+				self.builds.append(g.schema('{(tag building || sub building) && !tag shop && !tag manor && !tag school:noun}'))
+			self.matts = []
+			for i in range(0,random.randrange(2,5)):
+				self.matts.append(g.schema('{tag material:equ}'))
+			self.nameg = nameGen.generator()
+			self.name = self.nameg.makeWord()
+
+			path = 'saves/' + self.name
+			
+			#write the word lists that we generated to files, the gramer generators
+			#dependence on files are quite frusterating	
+			f = open(path + '.bld','w')
+			for build in self.builds:
+				f.write(build + '\n')
+			f.close()
+
+			f = open(path + '.mat','w')
+			for mat in self.matts:
+				f.write(mat + '\n')
+			f.close()
+
+			f = open(path + '.arc')
+			for arc in self.arcs:
+				f.write(arc + '\n')
+			f.close()
+			
 class node:
 	def __init__(self,x,y,g):
 		self.x = x
@@ -62,3 +101,10 @@ class node:
 			return True
 	def desc(self):
 		return self.gen.schema('{tag node_biome:sent}')
+
+if __name__ == '__main__':
+	c = Culture()
+	print(c.name)
+	print(c.arcs)
+	print(c.builds)
+	print(c.matts)

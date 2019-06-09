@@ -15,3 +15,6 @@ houseboat
 treehouse
 chateau
 dome house
+tp
+wigwam
+longhouse

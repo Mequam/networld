@@ -112,6 +112,7 @@
 	</life>
 	<dead>
 		<material>
+			<word type='equ'>words/noun/materials/equ.txt</word>
 			<gem><word type='noun'>words/noun/materials/gems.txt</word></gem>
 			<metal><word type='noun'>words/noun/materials/metals.txt</word></metal>
 			<word type='noun'>words/noun/materials/misc.txt</word>
@@ -130,7 +131,7 @@
 			<created>
 				<word type='noun'>words/noun/places/places.txt</word>
 				<building>
-					<word type='noun_clause'>schems/noun_clause/buildings/build.scm</word>
+					<word type='noun_clause'>schems/noun_clause/buildings/build.scm</word>	
 					<word type='arc'>words/adj/buildings/arc.txt</word>
 					<residential>
 						<house>
