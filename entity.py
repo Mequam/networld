@@ -3,7 +3,8 @@ import random
 import make_node
 import menu as Menu 
 import pickle
-
+import GramGen
+import nameGen
 def makeStat():
 	roll = 0
 	for i in range(0,3):
@@ -13,14 +14,82 @@ def makeStat():
 #what makes a good AI?
 #well that depends on the game that you are trying to run
 #we will have two types of AI, a person, and a 
+class Culture:
+	def __init__(self,f=None):
+		if f == None:
+			#generate a new culture with the generator
+			g = GramGen.generator('gen.xml')
+			arcs = []
+			for i in range(0,random.randrange(1,3)):
+				#now this could generate the same style arcitecture more than once,
+				#but thats ok, it simply means the culture this represents uses that style more
+				#often
+				arcs.append(g.schema('{tag building || sub building:arc}'))
+			builds = []
+			for i in range(0,random.randrange(2,5)):
+				builds.append(g.schema('{(tag building || sub building) && !tag shop && !tag manor && !tag school:noun}'))
+			matts = []
+			for i in range(0,random.randrange(2,5)):
+				matts.append(g.schema('{tag material:equ}'))
+			
+			occs = []
+			for i in range(0,random.randrange(3,5)):
+				occs.append(g.schema('{tag worker:noun}'))	
+			
+			#store a name generator for the culture and generate the cultures name
+			self.nameg = nameGen.generator()
+			self.name = self.nameg.makeWord()
+			
+			self.gen = GramGen.generator('gen.xml')
+			self.gen.addNode('noun','occ')
+			self.gen.addWordList('occ','noun','occ',occs)
+			
+			self.gen.addNode('noun','build')
+			self.gen.addWordList('build','noun','build',builds)
+			
+			self.gen.addNode('noun','arc')	
+			self.gen.addWordList('arc','noun','arc',arcs)	
+			
+			self.gen.addNode('noun','matt')
+			self.gen.addWordList('matt','noun','matt',matts)
+			
+			#now that the generator is loaded we add schemas to it
+			scm = [
+'{sub noun || tag noun && !(sub life || tag life):adj} {tag matt:noun} {tag build:noun}',
+'{tag matt:noun} {tag arc:noun} {tag build:noun}'
+,'{tag arc:noun} style {tag build:noun}',
+'{tag build:noun}',
+'{tag matt:noun} {tag build:noun}',
+'{(tag noun || sub noun) && !(sub life || tag life):adj} {tag build:noun}'
+]	
+			self.gen.addWordList('build','scm','bscm',scm)
+			
+			scm = [
+'{tag life || sub life || sup life:adj} {tag occ:noun}',
+'{tag life || sub life || sup life:adj} {sub sentient:noun}',
+]
+			self.gen.addWordList('occ','scm','oscm',scm)
+	def makeBuilding(self):
+		return self.gen.schema('{tag build:scm}')
+	def descPerson(self):
+		return self.gen.schema('{tag occ:scm}')			
+
 class Entity:
 	#represents somthing that can move around the grid world as it sees fit
-	def __init__(self,x,y):
-		self.x = x
-		self.y = y
+	def __init__(self,x=None,y=None):
+		if x == None:
+			self.x = random.randrange(1,21)
+		else:
+			self.x = x
+		if y == None:
+			self.y = random.randrange(1,21)
+		else:
+			self.y = y
 	def move(self,dx,dy):
 		self.x += dx
 		self.y += dy
+	def AI(self,party):
+		print('[*] running AI for ' + str(self))
 	def load(self,fname):
 		try:
 			f = open(fname,'rb')
@@ -35,25 +104,52 @@ class Entity:
 		f = open(fname,'wb')
 		pickle.dump(self.__dict__,f,pickle.HIGHEST_PROTOCOL)
 		f.close()
-		return True	
+		return True
+class Settler(Entity):
+	#this is a type of AI that will explore around the grid and try and settle down to create a new city
+	def __init__(self,culture,x=None,y=None):
+		Entity.__init__(self,x,y)
+		self.culture = culture
+		self.name = culture.nameGen.makeName()
+		self.hx = homex
+		self.hy = homey
+	def AI(self,party):
+		#the settler has no idea where home is, so it wanders aimlessly seaching
+		#for a place to place a new spawner
+		self.move(random.randrange(-1,2),random.randrange(-1,2))
+		if random.randrange(1,100) < make_node.node().hostl:
+			#spawn a city
+			return Town(self.culture,self.x,self.y)
 class Town(Entity):
 	#each town needs to have a description and a culture
 	#what would the culture look like?
-	def __init__(self,culture):
-		self.buildings = []
-		for i in range(1,11):
-			self.buildings.append(g.schema('{tag building:noun_clause}'))	
-		self.desc = g.schema('{tag town:noun_clause}')	 
-class Culture:
-	def __init__(self):
-		#generate a list of traits that the culture uses
-		#this will be used when creating Towns
+	def __init__(self,culture,name=None,x=None,y=None):
+		#steal the entity init for x and y
+		Entity.__init__(self,x,y)
+		#set name
+		if name == None:
+			self.name = culture.nameg.makeWord()
+		else:
+			self.name = name
+		#set culture
+		self.culture = culture
 		
-		#need a list of common profesions
-		#need a description
-		#need a list of common arcitectures
-		#need a list of allowed adj
-		print('fake')
+		#set the buildings that exist within the town
+		self.buildings = []	
+		for i in range(1,11):
+			self.buildings.append(culture.makeBuilding())
+		
+		#set the description for the town
+		self.desc = g.schema('{tag town:noun_clause}')
+	def AI(self,party):
+		#have a random chance of spawning a settler based on the hostlity of the node the town finds itself in
+		if random.randrange(1,101) < makenode.node(self.x,self.y).hostl:
+			return Settler(self.culture,self.x+random.randrange(1,20))
+		if party.x == self.x and party.y == self.y:
+			#the party found our town!, tell them whats up
+			#this generation could probably use some more work, but for now its ok
+			print('[*] in the distance you see a ' + culture.name +' '+ self.desc)
+			 
 class Bieng(Entity):
 	#this class represents anything that the players can through damage at
 	def __init__(self,x,y,lvl):
@@ -203,6 +299,7 @@ class Party(Entity):
 	def __init__(self,name=None,players=None):
 		self.x = 1
 		self.y = 1
+
 		if name == None:
 			self.name = 'potato_party'
 		else:
@@ -240,25 +337,6 @@ class Party(Entity):
 	def addPlayers(self,players):
 		self.players += players
 if __name__ == '__main__':
-	#p = Party('TeamAvatar')
+	c = Culture()
+	print(c.descPerson())
 	
-	#ang = Player('Ang')
-	#ang.rand()
-	#katara = Player('Katara')
-	#katara.rand()
-	#soka = Player('Soka')
-	#soka.rand
-
-	#p.addPlayers([ang,katara,soka])
-
-	#p.save('saves/parties/' + p.name)
-	
-	p = Party()
-	p.load('saves/parties/Venturians')
-	print(p.name)
-	for player in p.players:
-		print(player.name)
-		print('-'*20)
-		print(player.statStr())
-	#test = Player()
-	#test.prompt()

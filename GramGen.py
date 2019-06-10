@@ -114,16 +114,14 @@ def testTag(j,expr,f_arr,default,parenth,args):
 	else:
 		return False 
 def getTextNode(node,Type):
-	#this function returns the text inside of a given node
-	#marked by the word tag that has the given type
-	#if for some strange reason we are given a word node to begin with we
-	#use that instead of searching through the nodes children for the required tag
+	#this function searches a node and its children for a word tag containing text
+	#and returns the text of that word tag that matches the type type
 	if node.tag == 'word' and node.attrib['type'] == Type:
 		#the node that we were given was a word file pointer, so use its text	
-		return get_text(node.text)
+		return node.text
 	for child in node:
 		if child.tag == 'word' and child.attrib['type'] == Type:
-			return get_text(child.text)
+			return child.text
 	#note technicaly a required statement, but it helps keep things readable
 	return None
 class generator:
@@ -154,10 +152,14 @@ class generator:
 				#print(f'{node.tag} {cond}')
 				if cond:
 					text = getTextNode(node,args[0])
-					if text:
-						#the given node has text that we can load
-						#print(text)
-						args[1] += text
+					if text == None:
+						#the node does not contain any word objects that we can use, so skip it
+						return None
+					if text not in self.lists:
+						#the given text is not inside of our loaded wordlists, so load it into the dictionary
+						#print('loading word list into memory')
+						self.lists[text] = get_text(text)	
+					args[1] += self.lists[text]
 			loadNodes(self.root,[split_s[1],words])
 			return pickRandom(words)
 		return schema_real(string)
@@ -165,7 +167,7 @@ class generator:
 		#this fuction takes a file with a list of schemas and returns the parsed version of a random schema from the list,
 		#it serves as an entery point for each generator
 		return self.schema(pickRandom(get_text(filename)))
-	def addWordList(self,parent_tag,fname,Type,text_arr):
+	def addWordListFile(self,parent_tag,fname,Type,text_arr):
 		#this function adds a new word tag to the tree
 	
 	#first write the text_arr array to the given file
@@ -187,7 +189,26 @@ class generator:
 		getNodeTag(self.root,parent_tag).append(word)
 		return True
 	
-	def addNode(self,parent_tag,tag):
-		node = ET.Element(tag)
-		getNodeTag(self.root,parent_tag).append(node)
-		return True
+	def addNode(self,parent_tag,tag):	
+		parent = getNodeTag(self.root,parent_tag)
+		if parent != None:
+			node = ET.Element(tag)	
+			parent.append(node)
+			return True
+		else:
+			print('[GramGen] WARNING! unable to load parent node')
+			return False
+	def addWordList(self,parent_tag,Type,text,word_arr):
+		parent = getNodeTag(self.root,parent_tag)		
+		if parent != None:
+			word = ET.Element('word',type=Type)
+			word.text = text
+			self.lists[text] = word_arr
+			parent.append(word)
+		else:
+			print('[GramGen] WARNING! unable to load the parent node')
+		
+if __name__ == '__main__':
+	g = generator('gen.xml')
+	for i in range(0,100):
+		print(g.schema('{(sub animal || tag animal):noun}'))
