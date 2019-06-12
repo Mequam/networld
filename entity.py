@@ -17,6 +17,7 @@ def makeStat():
 class Culture:
 	def __init__(self,f=None):
 		if f == None:
+			
 			#generate a new culture with the generator
 			g = GramGen.generator('gen.xml')
 			arcs = []
@@ -40,7 +41,7 @@ class Culture:
 			self.nameg = nameGen.generator()
 			self.name = self.nameg.makeWord()
 			
-			self.gen = GramGen.generator('gen.xml')
+			self.gen = g
 			self.gen.addNode('noun','occ')
 			self.gen.addWordList('occ','noun','occ',occs)
 			
@@ -86,8 +87,17 @@ class Entity:
 		else:
 			self.y = y
 	def move(self,dx,dy):
-		self.x += dx
-		self.y += dy
+		#only set the movement if it does not move the entity off of the grid
+		#all movement should be done through this function, so as not to move anything off of the mathmaticaly
+		#playable grid
+		x = self.x + dx
+		y = self.y + dy
+		print(f'[entity] moving to {x} {y}')
+		if (x < 21 and x > 0) and (y < 21 and y > 0):
+			self.x = x
+			self.y = y
+			return True
+		return False
 	def AI(self,party):
 		print('[*] running AI for ' + str(self))
 	def load(self,fname):
@@ -110,20 +120,18 @@ class Settler(Entity):
 	def __init__(self,culture,x=None,y=None):
 		Entity.__init__(self,x,y)
 		self.culture = culture
-		self.name = culture.nameGen.makeName()
-		self.hx = homex
-		self.hy = homey
+		self.name = culture.nameg.makeWord()
 	def AI(self,party):
 		#the settler has no idea where home is, so it wanders aimlessly seaching
 		#for a place to place a new spawner
 		self.move(random.randrange(-1,2),random.randrange(-1,2))
-		if random.randrange(1,100) < make_node.node().hostl:
+		if random.randrange(1,100) < make_node.node().hostil:
 			#spawn a city
 			return Town(self.culture,self.x,self.y)
 class Town(Entity):
 	#each town needs to have a description and a culture
 	#what would the culture look like?
-	def __init__(self,culture,name=None,x=None,y=None):
+	def __init__(self,culture,x=None,y=None,name=None):
 		#steal the entity init for x and y
 		Entity.__init__(self,x,y)
 		#set name
@@ -139,16 +147,17 @@ class Town(Entity):
 		for i in range(1,11):
 			self.buildings.append(culture.makeBuilding())
 		
+		g = GramGen.generator('gen.xml')
 		#set the description for the town
 		self.desc = g.schema('{tag town:noun_clause}')
 	def AI(self,party):
 		#have a random chance of spawning a settler based on the hostlity of the node the town finds itself in
-		if random.randrange(1,101) < makenode.node(self.x,self.y).hostl:
+		if random.randrange(1,101) < make_node.node(self.x,self.y).hostil:
 			return Settler(self.culture,self.x+random.randrange(1,20))
 		if party.x == self.x and party.y == self.y:
 			#the party found our town!, tell them whats up
 			#this generation could probably use some more work, but for now its ok
-			print('[*] in the distance you see a ' + culture.name +' '+ self.desc)
+			print('[*] in the distance you see a ' + self.culture.name +' '+ self.desc)
 			 
 class Bieng(Entity):
 	#this class represents anything that the players can through damage at
@@ -299,7 +308,8 @@ class Party(Entity):
 	def __init__(self,name=None,players=None):
 		self.x = 1
 		self.y = 1
-
+		self.subx = 0
+		self.suby = 0
 		if name == None:
 			self.name = 'potato_party'
 		else:
@@ -336,6 +346,12 @@ class Party(Entity):
 		self.players.append(player)
 	def addPlayers(self,players):
 		self.players += players
+	def move(self,x,y):
+		if not Entity.move(self,x,y):
+			print('[*] you see a pulsating wall of energy in front of you')
+			print('[*] it seems to buzz as you touch it, preventing you from moving in this direction')
+			return False
+		return True
 if __name__ == '__main__':
 	c = Culture()
 	print(c.descPerson())

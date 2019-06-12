@@ -1,6 +1,6 @@
 def menu(shellname):
 	def decor(code):
-		def shell(previous_shell=None):
+		def shell(previous_shell=None,args=None):
             		#alert the user that we are changing shells (or menus)
 			print('[*] entering ' + shellname + ', type q to exit')    
 			while True:
@@ -12,7 +12,12 @@ def menu(shellname):
 					print('\r(' + shellname + ')> ' + lastansr)
 					ansr=lastansr
 				#feed that input to the custom defined code and see if it is valid
-				if not code(ansr):
+				success = False
+				if args != None:	
+					success = code(ansr,args)
+				else:
+					success = code(ansr)
+				if not success:
 					#the function that we are "decorating" did not like the user input that we gave it
 					#print out a uniform error message
 					print('[ERROR] "' + ansr + '" not recognised as data or shell')
@@ -27,5 +32,3 @@ def menu(shellname):
 			return 1
 		return shell
 	return decor
-
-

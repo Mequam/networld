@@ -27,12 +27,15 @@ class node:
 		self.x = x
 		self.y = y
 		self.gen = GramGen.generator('gen.xml')
-		print('the mac is ' + str(int(get_mac())))
+		#print('the mac is ' + str(int(get_mac())))
 		self.seed = (get_mac()-1)*400+(y-1)*20+x
 		#init the seed for this node
-		print('seeding with ' + str(self.seed))
+		#print('seeding with ' + str(self.seed))
 		random.seed(self.seed)
-		
+
+
+		#give the size array four different sizes, one corisponding to each direction
+		self.size = [random.randrange(1,8),random.randrange(1,8)]
 		self.biome = self.gen.schema('{tag biome:noun_clause}')
 		self.gen.addWordList('node_biome','node_noun','node/biome.txt',[self.biome])
 		self.hostil = random.randrange(1,101)
