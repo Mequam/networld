@@ -346,10 +346,21 @@ class Party(Entity):
 		self.players.append(player)
 	def addPlayers(self,players):
 		self.players += players
-	def move(self,x,y):
+	def move(self,x,y,careSub=False):
 		if not Entity.move(self,x,y):
 			print('[*] you see a pulsating wall of energy in front of you')
 			print('[*] it seems to buzz as you touch it, preventing you from moving in this direction')
+			if careSub:
+				#we dont want any of the sub x and sub y values to indicate movement, so figure out which one to decriment or incriment
+				if self.subx < 0:
+					print('resetting subx')
+					self.subx += 1
+				elif self.suby < 0:
+					self.suby += 1
+				elif x+self.x > 20:
+					self.subx -= 1
+				elif y+self.y > 20:
+					self.suby -= 1 
 			return False
 		return True
 if __name__ == '__main__':

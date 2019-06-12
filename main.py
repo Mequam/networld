@@ -86,28 +86,18 @@ def game(partyname):
 			elif split_i[0] == 'd':
 				#this could be an else statement, but were going to leave it as elif for readability
 				party.subx += 1
-			print('party sub pos ' + str([party.subx,party.suby]))
-			print('node size ' + str(args[0].size))		
+			
 			#they have performed a movement action, now see if that action is enough to move them out of the node that
 			#they are in
 			moved = False
 			if party.subx > args[0].size[0]:
-				moved = party.move(1,0)
-				if not moved:
-					#make sure that we revert their changes if they try and move into the energy wall
-					party.subx -= 1	
+				moved = party.move(1,0,True)	
 			elif party.subx < 0:
-				moved = party.move(-1,0)
-				if not moved:
-					party.subx += 1		
+				moved = party.move(-1,0,True)
 			elif party.suby > args[0].size[1]:
-				moved = party.move(0,1)
-				if not moved:
-					party.suby -= 1	
+				moved = party.move(0,1,True)
 			elif party.suby < 0:
-				moved = party.move(0,-1)
-				if not moved:
-					party.suby += 1	
+				moved = party.move(0,-1,True)
 			if moved:
 				print('moving\n'+'-'*20)
 				args[0] = make_node.node(party.x,party.y)
