@@ -63,3 +63,26 @@ class node:
 		return self.gen.schema('{tag node_biome:sent}')
 	def getPlant(self):
 		return self.gen.schema('{tag node_plant:node_noun}')
+	def strPlants(self):
+		ret_val = ''
+		for plant in self.plants:
+			ret_val += plant + '\n'
+		return ret_val[:-1]
+	def strAnimals(self):
+		ret_val = ''
+		for animal in self.animals:
+			ret_val += animal + '\n'
+		return ret_val[:-1]
+	def toString(self):
+		ret_val = ''
+		sep = '-'*20+'\n'
+		ret_val += self.biome + '\n'
+		ret_val += sep
+		ret_val += 'animals\n'
+		ret_val += sep
+		ret_val	+= self.strAnimals() + '\n\n'
+		
+		ret_val += 'plants\n'
+		ret_val += sep
+		ret_val += self.strPlants()
+		return ret_val

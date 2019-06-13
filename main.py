@@ -10,7 +10,6 @@ from uuid import getnode as get_mac
 
 #this is a wrapper function for the game menu that is actualy the main loop of the game
 #this function contains variables that can be used inside of the game loop
-
 def updateArrs(grid_arr,entity_arr):
 	try:
 		appended = 0
@@ -99,15 +98,16 @@ def game(partyname):
 			elif party.suby < 0:
 				moved = party.move(0,-1,True)
 			if moved:
-				print('moving\n'+'-'*20)
+				#first update the loaded node
 				args[0] = make_node.node(party.x,party.y)
+				#set the parties sub x and y to the middle of that node
 				party.suby = floor(args[0].size[1]/2)
 				party.subx = floor(args[0].size[0]/2)
-				print('party position ' + str([party.x,party.y]))	
-				print('node size ' + str(args[0].size))
-				print('initial party sub pos ' + str([party.subx,party.suby]))	
-				print('- '*10)
+				
+				#update the entity arrays to load all of the entities from the grid array that match the players current poss
+				#are loaded correctly
 				updateArrs(args[1],args[2])
+
 				#update entitiys in the grids node only if the players leave their current node
 				print('updating grid arr ' + str(len(args[1])))
 				for entity in args[1]:
@@ -118,6 +118,15 @@ def game(partyname):
 			for entity in args[2]:
 				#print(entity)
 				entity.AI(party)
+		elif split_i[0] == 'show' and len(split_i) > 1:
+			if split_i[1] == 'all':
+				print(args[0].toString())
+			elif split_i[1] == 'plants':
+				print(args[0].strPlants())
+			elif split_i[1] == 'animals':
+				print(args[0].strAnimals())
+			elif split_i[1] == 'biome':
+				print(args[0].biome)
 		return True	
 	
 	print(grid_arr)	
