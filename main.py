@@ -13,7 +13,6 @@ from uuid import getnode as get_mac
 def updateArrs(grid_arr,entity_arr):
 	try:
 		appended = 0
-		print(entity_arr)
 		for i in range(0,len(entity_arr)):
 			if entity_arr[i].x != player.x and entity_arr[i].y != player.y:
 				#somthing in the entity array is not on the same grid as the players, move it to the other array
@@ -100,6 +99,7 @@ def game(partyname):
 			if moved:
 				#first update the loaded node
 				args[0] = make_node.node(party.x,party.y)
+				print(args[0].desc())
 				#set the parties sub x and y to the middle of that node
 				party.suby = floor(args[0].size[1]/2)
 				party.subx = floor(args[0].size[0]/2)
@@ -109,12 +109,18 @@ def game(partyname):
 				updateArrs(args[1],args[2])
 
 				#update entitiys in the grids node only if the players leave their current node
-				print('updating grid arr ' + str(len(args[1])))
+				
 				for entity in args[1]:
 					#print(entity)
 					entity.AI(party)
-			#update entities in the players node no matter what
-			print('entity arr ' + str(len(args[2])))
+			else:
+				#we didnt leave the node that we are in, there is a chance that we will spawn an encounter
+				#roll for that chance
+				if random.randrange(1,101) < 45:
+					print('[*] ' + args[0].enc())
+				else:
+					print('[*] you move onwards unobscured')
+			#update entities in the players node no matter what	
 			for entity in args[2]:
 				#print(entity)
 				entity.AI(party)

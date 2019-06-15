@@ -1,0 +1,4 @@
+close
+far off
+near
+distant

@@ -209,6 +209,7 @@ class generator:
 			print('[GramGen] WARNING! unable to load the parent node')
 		
 if __name__ == '__main__':
+	import sys
 	g = generator('gen.xml')
-	for i in range(0,100):
-		print(g.schema('{(sub animal || tag animal):noun}'))
+	print(parse.squish(sys.argv[1:],' '))
+	print(g.schema(parse.squish(sys.argv[1:],' ')))

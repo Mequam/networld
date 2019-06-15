@@ -1,7 +1,11 @@
 <noun>	
 	<word type='adj'>words/adj/noun.txt</word>
 	<word type='adv'>words/adv/noun.txt</word>
-	<word type='color'>words/adj/color.txt</word>	
+	<word type='color'>words/adj/color.txt</word>
+	<word type='verb_ns'>words/verb/verbno_s.txt</word>	
+	<dist>
+		<word type='adj'>words/adj/dist.txt</word>
+	</dist>
 	<node>
 		<node_animal></node_animal>
 		<node_plant></node_plant>
