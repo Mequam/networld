@@ -37,7 +37,7 @@ class node:
 
 		#give the size array four different sizes, one corisponding to each direction
 		self.size = [random.randrange(1,8),random.randrange(1,8)]
-		self.hostil = random.randrange(1,101)	
+		self.hostil = random.randrange(1,60)	
 		
 		self.biome = self.gen.schema('{tag biome:noun_clause}')
 		self.gen.addWordList('node_biome','node_noun','node/biome.txt',[self.biome])
@@ -90,7 +90,7 @@ class node:
 		elif len(self.animals) > 0:
 			return self.gen.schema('{tag animal_enc:sent}')
 		else:
-			return True
+			return 'encounter!'
 	def desc(self):
 		if len(self.plants) > 1 and len(self.animals) > 1:
 			return 'you see a ' + self.gen.schema('{sub node_biome_sent:node_noun2}')

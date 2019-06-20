@@ -5,11 +5,35 @@ import menu as Menu
 import pickle
 import GramGen
 import nameGen
+from math import floor
 def makeStat():
 	roll = 0
 	for i in range(0,3):
 		roll += random.randrange(1,7)
 	return roll
+def roll(diceType,adv=0):
+	Dis = False
+	if adv < 0:
+		#we are disadvantaged
+		adv *= -1
+		Dis = True
+
+	#this is the "normal" roll, the one that will happen every time regaurdless of advantage
+	last_roll = random.randrange(1,diceType)	
+	
+	#this is the advantage loop roll a dice for each advantage and if that dice is greater (or less than if were dis)
+	#than the last roll "topple" the last roll, ensureing that we get the number that best fits the desired advantage
+	for i in range(0,adv):
+		roll = random.randrange(1,diceType)
+		if Dis:
+			if roll < last_roll:
+				last_roll = roll
+		else:
+			if roll > last_roll:	
+				last_roll = roll
+
+	#return the number now that it ocntains the best roll for what we want
+	return last_roll
 
 #what makes a good AI?
 #well that depends on the game that you are trying to run
@@ -92,7 +116,7 @@ class Entity:
 		#playable grid
 		x = self.x + dx
 		y = self.y + dy
-		print(f'[entity] moving to {x} {y}')
+		
 		if (x < 21 and x > 0) and (y < 21 and y > 0):
 			self.x = x
 			self.y = y
@@ -125,9 +149,14 @@ class Settler(Entity):
 		#the settler has no idea where home is, so it wanders aimlessly seaching
 		#for a place to place a new spawner
 		self.move(random.randrange(-1,2),random.randrange(-1,2))
-		if random.randrange(1,100) < make_node.node().hostil:
+		if random.randrange(1,100) < make_node.node(self.x,self.y).hostil:
 			#spawn a city
+			print('[setler] spawning a city at ' + str([self.x,self.y]))
 			return Town(self.culture,self.x,self.y)
+		else:
+			if random.randrange(1,101) < 50:
+				print('[settler] deleting a ' + self.culture.name + ' settler')
+				return -1
 class Town(Entity):
 	#each town needs to have a description and a culture
 	#what would the culture look like?
@@ -152,13 +181,14 @@ class Town(Entity):
 		self.desc = g.schema('{tag town:noun_clause}')
 	def AI(self,party):
 		#have a random chance of spawning a settler based on the hostlity of the node the town finds itself in
+		print(str([self.x,self.y]) + ' at ' + self.name)
 		if random.randrange(1,101) < make_node.node(self.x,self.y).hostil:
+			print('[entity] spawning a seteller')
 			return Settler(self.culture,self.x+random.randrange(1,20))
 		if party.x == self.x and party.y == self.y:
 			#the party found our town!, tell them whats up
 			#this generation could probably use some more work, but for now its ok
 			print('[*] in the distance you see a ' + self.culture.name +' '+ self.desc)
-			 
 class Bieng(Entity):
 	#this class represents anything that the players can through damage at
 	def __init__(self,x,y,lvl):
@@ -172,9 +202,34 @@ class Bieng(Entity):
 		self.cha = makeStat() + random.randrange(1,lvl)	
 		self.hp = random.randrange(10,lvl*100)
 		self.ac = random.randrange(18-lvl,20)-10
+		
+		self.adv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}
+	
+	#this function is used to roll a stat with the advantages of two different stats
+	#it is ment to be a wrapper function ONLY and should not be called outside of the object
+	def rollStat(self,stat='str',sub_stat=None):
+		if sub_stat == None or (sub_stat not in self.adv):
+			sub_adv = 0
+			print('[rollStat] setting subAdv to 0!')
+		else:
+			sub_adv = self.adv[sub_stat]
+			print(f'[rollStat] setting subAdv to {sub_adv}')
+	
+		return roll(20,self.adv[stat] + sub_adv)
 
-		#this array contains all of the effects placed on the bieng 
-		self.eff = []	
+	def rollStr(self,sub_stat=None):
+		return self.rollStat('str',sub_stat) + floor((self.str-10)/2)
+	def rollDex(self,sub_stat=None):
+		return self.rollStat('dex',sub_stat) + floor((self.dex-10)/2)
+	def rollCon(self,sub_stat=None):
+		return self.rollStat('con',sub_stat) + floor((self.con-10)/2)
+	def rollInt(self,sub_stat=None):
+		return self.rollStat('int',sub_stat) + floor((self.int-10)/2)
+	def rollWis(self,sub_stat=None):
+		return self.rollStat('wis',sub_stat) + floor((self.wis-10)/2)
+	def rollCha(self,sub_stat=None):
+		return self.rollStat('cha',sub_stat) + floor((self.cha-10)/2)
+
 	def statStr(self):
 		ret_val = ''
 		ret_val += 'str:' + str(self.str) + '\n'
@@ -364,6 +419,11 @@ class Party(Entity):
 			return False
 		return True
 if __name__ == '__main__':
-	c = Culture()
-	print(c.descPerson())
-	
+	for i in range(1,40):
+		print(f'{roll(20,-1)} {roll(20)} {roll(20,1)}')
+	b = Bieng(1,1,2)
+	print(b.str)
+	b.adv['speed']=4
+	print(b.rollDex('speed'))
+	#c = Culture()
+	#print(c.descPerson())	

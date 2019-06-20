@@ -27,8 +27,7 @@ def updateArrs(grid_arr,entity_arr):
 				del grid_arr[i]
 		return True
 	except:
-		return False
-
+		return False	
 def game(partyname):	
 	#the grid array represents any entity not on the same node as the players
 	#load the grid and the partyname
@@ -109,10 +108,14 @@ def game(partyname):
 				updateArrs(args[1],args[2])
 
 				#update entitiys in the grids node only if the players leave their current node
-				
-				for entity in args[1]:
+				for i in range(0,len(args[1])):
 					#print(entity)
-					entity.AI(party)
+					spawn = args[1][i].AI(party)
+					if spawn == -1:
+						del args[1][i]
+					elif spawn != None:
+						args[1].append(spawn)
+				print(args[1])
 			else:
 				#we didnt leave the node that we are in, there is a chance that we will spawn an encounter
 				#roll for that chance
@@ -121,9 +124,13 @@ def game(partyname):
 				else:
 					print('[*] you move onwards unobscured')
 			#update entities in the players node no matter what	
-			for entity in args[2]:
+			for i in range(0,len(args[2])):
 				#print(entity)
-				entity.AI(party)
+				spawn = args[2][i].AI(party)
+				if spawn == -1:
+					del args[2][i]
+				elif spawn != None:
+					args[2].append(spawn)
 		elif split_i[0] == 'show' and len(split_i) > 1:
 			if split_i[1] == 'all':
 				print(args[0].toString())
@@ -133,6 +140,14 @@ def game(partyname):
 				print(args[0].strAnimals())
 			elif split_i[1] == 'biome':
 				print(args[0].biome)
+		elif split_i[0] == 'tp' and len(split_i) > 2:
+			try:
+				party.x = int(split_i[1])
+				party.y = int(split_i[2])
+				args[0] = make_node.node(party.x,party.y)
+				print('you see a ' + args[0].desc())
+			except:
+				return False
 		return True	
 	
 	print(grid_arr)	
