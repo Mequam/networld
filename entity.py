@@ -23,7 +23,7 @@ def roll(diceType,adv=0):
 	
 	#this is the advantage loop roll a dice for each advantage and if that dice is greater (or less than if were dis)
 	#than the last roll "topple" the last roll, ensureing that we get the number that best fits the desired advantage
-	for i in range(0,adv):
+	for i in range(0,int(adv)):
 		roll = random.randrange(1,diceType)
 		if Dis:
 			if roll < last_roll:
@@ -192,6 +192,7 @@ class Town(Entity):
 class Bieng(Entity):
 	#this class represents anything that the players can through damage at
 	def __init__(self,x,y,lvl):
+		self.actions = 2
 		self.x = x
 		self.y = y
 		self.str = makeStat() + random.randrange(1,lvl)
@@ -202,20 +203,56 @@ class Bieng(Entity):
 		self.cha = makeStat() + random.randrange(1,lvl)	
 		self.hp = random.randrange(10,lvl*100)
 		self.ac = random.randrange(18-lvl,20)-10
-		
+		self.thaco = 20 - lvl
+		self.name = 'NA'
+			
 		self.adv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}
-	
+	def ToScreen(self,command=['all']):
+		print(self.name)
+		print('-'*len(self.name))
+		if 'hp' in command or 'all' in command:
+			print('hp:' + str(self.hp),end=' ')
+		if 'ac' in command or 'all' in command:
+			print('ac:' + str(self.ac))
+		elif 'hp' in command:
+			#make sure that we print a new line after the hp ac line no matter what
+			print()
+		if 'str' in command or 'stats' in command or 'all' in command:
+			print('str:' + str(self.str))
+		if 'dex' in command or 'stats' in command or 'all' in command:
+			print('dex:' + str(self.dex))
+		if 'con' in command or 'stats' in command or 'all' in command:
+			print('con:' + str(self.con))
+		if 'int' in command or 'stats' in command or 'all' in command:
+			print('int:' + str(self.int))	
+		if 'wis' in command or 'stats' in command or 'all' in command:
+			print('wis:' + str(self.wis))
+		if 'cha' in command or 'stats' in command or 'all' in command:
+			print('cha:' + str(self.cha))
+		if 'adv' in command or 'all' in command:
+			print(self.adv)
+
+	def addAdv(self,stat,num):
+		if stat not in self.adv:
+			self.adv[stat] = num
+			return False
+		self.adv[stat] += num
+		return True
 	#this function is used to roll a stat with the advantages of two different stats
 	#it is ment to be a wrapper function ONLY and should not be called outside of the object
 	def rollStat(self,stat='str',sub_stat=None):
 		if sub_stat == None or (sub_stat not in self.adv):
-			sub_adv = 0
-			print('[rollStat] setting subAdv to 0!')
+			sub_adv = 0	
 		else:
 			sub_adv = self.adv[sub_stat]
-			print(f'[rollStat] setting subAdv to {sub_adv}')
+			
 	
-		return roll(20,self.adv[stat] + sub_adv)
+		r = roll(20,self.adv[stat] + sub_adv)
+		if r == 20:
+			print('[roll] crit sucess!')
+		elif r == 1:
+			print('[roll] crit fail!')
+		return r
 
 	def rollStr(self,sub_stat=None):
 		return self.rollStat('str',sub_stat) + floor((self.str-10)/2)
@@ -229,7 +266,13 @@ class Bieng(Entity):
 		return self.rollStat('wis',sub_stat) + floor((self.wis-10)/2)
 	def rollCha(self,sub_stat=None):
 		return self.rollStat('cha',sub_stat) + floor((self.cha-10)/2)
-
+	def rollHit(self,bieng):
+		#you want low thaco and high ac
+		hit_num = self.thaco + bieng.ac
+		if self.rollStr('attack') > hit_num:
+			return True
+		else:
+			return False
 	def statStr(self):
 		ret_val = ''
 		ret_val += 'str:' + str(self.str) + '\n'

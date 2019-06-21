@@ -1,5 +1,5 @@
-Add [num] Dis to [target] {sub check && ! tag ind:state}
-Add [num] Adv to [target] {sub check && ! tag ind:state}
+Dis [num] to [target] {sub check && ! tag ind:state}
+Adv [num] to [target] {sub check && ! tag ind:state}
 Sub [num] from [target] {sub check && ! tag specif:state}
 Add [num] to [target] {sub check && ! tag specif:state}
 Set {tag letter:state} to [target/num] for (number) calls
