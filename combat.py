@@ -125,6 +125,12 @@ def parse_command(command,var_dict,bieng_arr,caster):
 		else:
 			print('[combat] setting ' + command[1] + ' to ' + str(num))
 		var_dict[command[1]] = [num,int(command[5])]
+def checkname(bieng_arr,name):
+	for bieng in bieng_arr:
+		if bieng.name == name:
+			return False
+	return True
+
 def combat_wrapper(bieng_arr,party):
 	#TODO: figure out a way to make sure that only biengs are contained inside of the bieng arr
 	#this function is a wrapper function containing the variables for the combatMenu below it	
@@ -151,7 +157,7 @@ def combat_wrapper(bieng_arr,party):
 			#when subStat is None it is ignored by the roll functions, which is why we init it to None
 			subStat = None
 			#initilise the target to point to the bieng currently taking their turn
-			target = bieng_arr[turn]
+			target = bieng_arr[Turn]
 			
 			if len(command) > 2:
 				if command[2] != 'self':
@@ -163,22 +169,21 @@ def combat_wrapper(bieng_arr,party):
 				#only bother checking if its greater than three if we know its greater than 2
 				if len(command) > 3:
 					subStat = command[3]
-
-				if command[0] == 'str':
-					roll = target.rollStr(subStat)
-				elif command[0] == 'dex':
-					roll = target.rollDex(subStat)
-				elif command[0] == 'con':
-					roll = target.rollCon(subStat)		
-				elif command[0] == 'int':
-					roll = target.rollInt(subStat)	
-				elif command[0] == 'wis':
-					roll = target.rollWis(subStat)
-				elif command[0] == 'cha':
-					roll = target.rollCha(subStat)
-				else:
-					print('[combat] ERROR: invalid stat recived!')
-				print('[combat] ' + target.name + ' rolled a ' + roll)
+			if command[1] == 'str':
+				roll = target.rollStr(subStat)
+			elif command[1] == 'dex':
+				roll = target.rollDex(subStat)
+			elif command[1] == 'con':
+				roll = target.rollCon(subStat)		
+			elif command[1] == 'int':
+				roll = target.rollInt(subStat)	
+			elif command[1] == 'wis':
+				roll = target.rollWis(subStat)
+			elif command[1] == 'cha':
+				roll = target.rollCha(subStat)
+			else:
+				print('[combat] ERROR: invalid stat recived!')
+			print('[combat] ' + target.name + ' rolled a ' + str(roll))
 		elif command[0] == 'ls':	
 			for bieng in bieng_arr:
 				bieng.ToScreen(command)
@@ -210,22 +215,45 @@ def combat_wrapper(bieng_arr,party):
 		elif command[0] == 'addEntity':
 			if len(command) > 1:
 				#add an entity of a given level with the optional given name to the bieng_arr
-				bieng_arr.append(entity.Bieng(party.x,party.y,int(command[1])))
+				e = entity.Bieng(party.x,party.y,int(command[1]))
+				if len(command) > 2:
+					#they gave us a name, load it
+					name = command[2]
+				else:
+					#they did not give us a valid name so default to unamed
+					name = 'unamed'
+				num = 0
+				testname = name
+				#make sure that the name we want to use does not exist
+				#and if it does add a number after it
+				while not checkname(bieng_arr,testname):
+					num += 1
+					testname = name + str(num)
+				e.name = testname
+				bieng_arr.append(e)	
+			else:
+				print('[combat] ERROR: entity level required!')
 		elif command[0] == 'removeEntity':
 			if len(command) > 1:
+				print(command[1])
+				print('[Debug] alive')
 				for i in range(0,len(bieng_arr)):
 					if bieng_arr[i].name == command[1]:
-						bieng_arr[i].loot()
+						print('[combat] ' + bieng.name + ' dropped a spell fragment: ' + bieng_arr[i].loot())
 						del bieng_arr[i]
 						#make sure that turn does not point outside of the array
 						Turn = Turn % len(bieng_arr)
+						#exit the for loop
+						break
 		else:
 			parse_command(command,var_dict,bieng_arr,bieng_arr[Turn].name)
 		#this is where you would run the token system for the bieng that is currently on
 		if bieng_arr[Turn].actions <= 0:
 			#reset their actions and incriment the turn clock
 			bieng_arr[Turn].actions = 2
-			Turn = (Turn + 1) % len(bieng_arr)	
+			Turn = (Turn + 1) % len(bieng_arr)
+			print('[command] ending the turn!')
+			print('-'*30)	
 			print('[command] it is currently ' + bieng_arr[Turn].name + '\'s turn')		
 		command = input('(combat)> ').split(' ')				
 		
@@ -246,7 +274,7 @@ if __name__ == '__main__':
 	b = entity.Bieng(2,2,2)
 	b.name = 'test'
 	arr = [a,b]	
-	combat_wrapper(arr)
+	combat_wrapper(arr,entity.Party())
 #TargetLineRange
 #TargetRadiusRange
 #TargetEyeContact
