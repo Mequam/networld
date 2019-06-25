@@ -138,7 +138,7 @@ class generator:
 	def schema(self,string):
 		#this function just makes sure that the decorator function is not getting passed the self argument
 		@parse.get_enclosed(self.parenth)
-		def schema_real(string):
+		def schema_real(string,args):
 			split_s = string.split(':')
 			words = []
 
@@ -198,6 +198,39 @@ class generator:
 		else:
 			print('[GramGen] WARNING! unable to load parent node')
 			return False
+	def addWordListPassive(self,parent_tag,Type,File):
+		#this function adds a word list to the given target
+		#but does not write to the given file, instead it simply points the 
+		#word list at the file
+		parent = getNodeTag(self.root,parent_tag)
+		if parent != None:
+			word = ET.Element('word',type=Type)
+			word.text = File
+			return True
+		else:
+			print('[GramGen] WARNING! unable to load the parent node')
+			return False
+	def addWordListFromFile(self,parent_tag,Type,text,File):
+		#this function reads in a file and adds its content to the word list
+		parent = getNodeTag(self.root,parent_tag)
+		if parent != None:
+			#they gave us a valid parent
+			try:
+				words = get_text(File)
+			except:
+				print('[GramGen] ERROR! unable to open the given file')
+				return False
+
+			#they gave us a valid filename, add them to the tree
+			word = ET.Element('word',type=Type)
+			word.text = text
+			self.lists[text] = words
+			
+			parent.append(word)
+			return True	
+		else:
+			print('[GramGen] WARNING! unable to load the parent node')
+			return False
 	def addWordList(self,parent_tag,Type,text,word_arr):
 		parent = getNodeTag(self.root,parent_tag)		
 		if parent != None:
@@ -205,9 +238,10 @@ class generator:
 			word.text = text
 			self.lists[text] = word_arr
 			parent.append(word)
+			return True
 		else:
 			print('[GramGen] WARNING! unable to load the parent node')
-		
+			return False
 if __name__ == '__main__':
 	import sys
 	g = generator('gen.xml')

@@ -1,0 +1,5 @@
+spear
+glaive
+war scythe
+halberd
+poleaxe

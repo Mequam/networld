@@ -1,0 +1,6 @@
+long
+short
+one handed
+two handed
+broad
+{sub animal:noun}

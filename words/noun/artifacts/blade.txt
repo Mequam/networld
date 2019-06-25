@@ -1,0 +1,10 @@
+sword
+knife
+dager
+axe
+sickle
+kama
+scimitar
+katana
+rapier
+sabre

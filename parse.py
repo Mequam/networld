@@ -1,6 +1,6 @@
 def get_enclosed(parenth=['[',']']):
     def decor(fun):
-        def parse(expr,parenth2=parenth):
+        def parse(expr,parenth2=parenth,**args):
             first_index = expr.find(parenth2[0])
             second_index = -1
             count = 1
@@ -20,7 +20,7 @@ def get_enclosed(parenth=['[',']']):
                 return expr
             else:
                 #the function contains parenthasis, pass it down the chain without the parenthasis that we found
-                return parse(expr[:first_index] + fun(expr[first_index + 1:second_index]) + expr[second_index + 1:],parenth2)
+                return parse(expr[:first_index] + fun(expr[first_index + 1:second_index],args) + expr[second_index + 1:],parenth2)
         return parse
     return decor
 

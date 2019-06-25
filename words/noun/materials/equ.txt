@@ -1,3 +1,4 @@
 {tag metal:noun}
 {tag material:noun}
 {tag gem:noun}
+{tag element:noun}

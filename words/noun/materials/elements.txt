@@ -1,0 +1,12 @@
+water
+earth
+fire
+air
+ice
+lightning
+void
+darknes
+light
+life
+death
+poison

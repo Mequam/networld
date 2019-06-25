@@ -4,5 +4,5 @@ TargetEyeContact
 TargetTouch
 TargetSight
 TargetPuncture
-TargetThrough {sub material:noun}
+TargetThrough_{tag material:equ}
 TargetLine

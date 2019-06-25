@@ -6,6 +6,7 @@ import pickle
 import GramGen
 import nameGen
 from math import floor
+from statement import makeState
 def makeStat():
 	roll = 0
 	for i in range(0,3):
@@ -205,8 +206,13 @@ class Bieng(Entity):
 		self.ac = random.randrange(18-lvl,20)-10
 		self.thaco = 20 - lvl
 		self.name = 'NA'
+		self.lvl = lvl
 			
 		self.adv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}
+	def loot(self):
+		#this function returns a string that represents loot that the players can use
+		return makeState(self.lvl)
+	
 	def ToScreen(self,command=['all']):
 		print(self.name)
 		print('-'*len(self.name))

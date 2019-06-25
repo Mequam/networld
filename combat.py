@@ -125,7 +125,7 @@ def parse_command(command,var_dict,bieng_arr,caster):
 		else:
 			print('[combat] setting ' + command[1] + ' to ' + str(num))
 		var_dict[command[1]] = [num,int(command[5])]
-def combat_wrapper(bieng_arr):
+def combat_wrapper(bieng_arr,party):
 	#TODO: figure out a way to make sure that only biengs are contained inside of the bieng arr
 	#this function is a wrapper function containing the variables for the combatMenu below it	
 	
@@ -206,14 +206,26 @@ def combat_wrapper(bieng_arr):
 			#they want to end their turn, so remove all of their actions
 			bieng_arr[Turn].actions = 0
 		elif command[0] == 'turn':
-			print('[command] it is currently ' + bieng_arr[Turn].name + '\'s turn')	
+			print('[command] it is currently ' + bieng_arr[Turn].name + '\'s turn')
+		elif command[0] == 'addEntity':
+			if len(command) > 1:
+				#add an entity of a given level with the optional given name to the bieng_arr
+				bieng_arr.append(entity.Bieng(party.x,party.y,int(command[1])))
+		elif command[0] == 'removeEntity':
+			if len(command) > 1:
+				for i in range(0,len(bieng_arr)):
+					if bieng_arr[i].name == command[1]:
+						bieng_arr[i].loot()
+						del bieng_arr[i]
+						#make sure that turn does not point outside of the array
+						Turn = Turn % len(bieng_arr)
 		else:
 			parse_command(command,var_dict,bieng_arr,bieng_arr[Turn].name)
 		#this is where you would run the token system for the bieng that is currently on
 		if bieng_arr[Turn].actions <= 0:
 			#reset their actions and incriment the turn clock
 			bieng_arr[Turn].actions = 2
-			Turn = (Turn + 1) % mod	
+			Turn = (Turn + 1) % len(bieng_arr)	
 			print('[command] it is currently ' + bieng_arr[Turn].name + '\'s turn')		
 		command = input('(combat)> ').split(' ')				
 		

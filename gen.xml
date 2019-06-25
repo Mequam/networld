@@ -115,12 +115,40 @@
 		</asentient>
 	</life>
 	<dead>
+		
 		<material>
 			<word type='equ'>words/noun/materials/equ.txt</word>
+			<element><word type='noun'>words/noun/materials/elements.txt</word></element>
 			<gem><word type='noun'>words/noun/materials/gems.txt</word></gem>
 			<metal><word type='noun'>words/noun/materials/metals.txt</word></metal>
 			<word type='noun'>words/noun/materials/misc.txt</word>
 		</material>
+		<equipment>
+			<weapon>
+				<melee>
+					<blade>
+						<word type='noun'>words/noun/artifacts/blade.txt</word>
+						<word type='adj'>words/adj/artifacts/blade.txt</word>
+					</blade>
+					<rope>
+						<word type='noun'>words/noun/artifacts/rope.txt</word>	
+					</rope>
+					<pole>
+						<word type='noun'>words/noun/artifacts/pole.txt</word>
+					</pole>
+				</melee>
+				<range>
+					<bow>
+						<word type='noun'>words/noun/artifacts/bow.txt</word>
+					</bow>	
+				</range>
+			</weapon>
+			<tool>
+				<mine_tool>
+					<word type='noun'>words/noun/artifacts/mine.txt</word>
+				</mine_tool>
+			</tool>
+		</equipment>
 		<place>
 			<natural>
 				<biome>
