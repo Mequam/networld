@@ -12,7 +12,10 @@ def makeStat():
 	for i in range(0,3):
 		roll += random.randrange(1,7)
 	return roll
+
 def roll(diceType,adv=0):
+#in the future we might want to make cdice parse this for some
+#interesting die rolls, but for now well leave it as this
 	Dis = False
 	if adv < 0:
 		#we are disadvantaged
@@ -196,12 +199,18 @@ class Bieng(Entity):
 		self.actions = 2
 		self.x = x
 		self.y = y
-		self.str = makeStat() + random.randrange(1,lvl)
-		self.dex = makeStat() + random.randrange(1,lvl)
-		self.con = makeStat() + random.randrange(1,lvl)
-		self.int = makeStat() + random.randrange(1,lvl)
-		self.wis = makeStat() + random.randrange(1,lvl)
-		self.cha = makeStat() + random.randrange(1,lvl)	
+
+		if lvl <= 1:
+			lvl = 2
+		stre = makeStat() + random.randrange(1,lvl)
+		dex = makeStat() + random.randrange(1,lvl)
+		con = makeStat() + random.randrange(1,lvl)
+		inte = makeStat() + random.randrange(1,lvl)
+		wis = makeStat() + random.randrange(1,lvl)
+		cha = makeStat() + random.randrange(1,lvl)	
+		
+		self.stats = {'str':stre,'dex':dex,'con':con,'int':inte,'wis':wis,'cha':cha}
+		
 		self.hp = random.randrange(10,lvl*100)
 		self.ac = random.randrange(18-lvl,20)-10
 		self.thaco = 20 - lvl
@@ -209,6 +218,18 @@ class Bieng(Entity):
 		self.lvl = lvl
 			
 		self.adv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}
+	
+	def check(self,given_stats,dieType=20):
+		mod = 0
+		for stat in self.stats:
+			if stat in given_stats:
+				mod += floor((self.stats[stat] - 10)/2)
+		adv = 0
+		for stat in self.stats:
+			if stat in given_stats:
+				adv += self.adv[stat]
+		#now return a disadvantaged/advantaged roll
+		return roll(20,adv)+mod
 	def loot(self):
 		#this function returns a string that represents loot that the players can use
 		return makeState(self.lvl)
@@ -223,70 +244,24 @@ class Bieng(Entity):
 		elif 'hp' in command:
 			#make sure that we print a new line after the hp ac line no matter what
 			print()
-		if 'str' in command or 'stats' in command or 'all' in command:
-			print('str:' + str(self.str))
-		if 'dex' in command or 'stats' in command or 'all' in command:
-			print('dex:' + str(self.dex))
-		if 'con' in command or 'stats' in command or 'all' in command:
-			print('con:' + str(self.con))
-		if 'int' in command or 'stats' in command or 'all' in command:
-			print('int:' + str(self.int))	
-		if 'wis' in command or 'stats' in command or 'all' in command:
-			print('wis:' + str(self.wis))
-		if 'cha' in command or 'stats' in command or 'all' in command:
-			print('cha:' + str(self.cha))
+		for stat in self.stats:
+			if stat in command or 'all' in command or 'stats' in command:
+				print(stat + ':' + str(self.stats[stat]))
 		if 'adv' in command or 'all' in command:
 			print(self.adv)
-
 	def addAdv(self,stat,num):
 		if stat not in self.adv:
 			self.adv[stat] = num
 			return False
 		self.adv[stat] += num
 		return True
+
 	#this function is used to roll a stat with the advantages of two different stats
 	#it is ment to be a wrapper function ONLY and should not be called outside of the object
-	def rollStat(self,stat='str',sub_stat=None):
-		if sub_stat == None or (sub_stat not in self.adv):
-			sub_adv = 0	
-		else:
-			sub_adv = self.adv[sub_stat]
-			
-	
-		r = roll(20,self.adv[stat] + sub_adv)
-		if r == 20:
-			print('[roll] crit sucess!')
-		elif r == 1:
-			print('[roll] crit fail!')
-		return r
-
-	def rollStr(self,sub_stat=None):
-		return self.rollStat('str',sub_stat) + floor((self.str-10)/2)
-	def rollDex(self,sub_stat=None):
-		return self.rollStat('dex',sub_stat) + floor((self.dex-10)/2)
-	def rollCon(self,sub_stat=None):
-		return self.rollStat('con',sub_stat) + floor((self.con-10)/2)
-	def rollInt(self,sub_stat=None):
-		return self.rollStat('int',sub_stat) + floor((self.int-10)/2)
-	def rollWis(self,sub_stat=None):
-		return self.rollStat('wis',sub_stat) + floor((self.wis-10)/2)
-	def rollCha(self,sub_stat=None):
-		return self.rollStat('cha',sub_stat) + floor((self.cha-10)/2)
-	def rollHit(self,bieng):
-		#you want low thaco and high ac
-		hit_num = self.thaco + bieng.ac
-		if self.rollStr('attack') > hit_num:
-			return True
-		else:
-			return False
 	def statStr(self):
 		ret_val = ''
-		ret_val += 'str:' + str(self.str) + '\n'
-		ret_val += 'dex:' + str(self.dex) + '\n'
-		ret_val += 'con:' + str(self.con) + '\n'
-		ret_val += 'int:' + str(self.int) + '\n'
-		ret_val += 'wis:' + str(self.wis) + '\n'	
-		ret_val += 'cha:' + str(self.cha)
+		for stat in self.stats:
+			ret_val += stat + ':' + str(self.stats[stat]) + '\n'
 		return ret_val
 	
 class Player(Bieng):
@@ -295,12 +270,9 @@ class Player(Bieng):
 			self.name = 'J0hn Doe'
 		else:
 			self.name = name 	
-		self.str = 0
-		self.dex = 0
-		self.con = 0
-		self.int = 0
-		self.wis = 0
-		self.cha = 0	
+		
+		self.stats = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}		
+		self.adv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}	
 	def load(self,fname=None):
 		if fname==None:
 			fname = 'players/' + self.name + '.pkl'
@@ -370,35 +342,35 @@ class Player(Bieng):
 						roll = rolls[index]
 						print('setting ' + split_s[0] + ' to ' + str(roll))	
 						if split_s[0] == 'str':
-							if self.str != 0:
+							if self.stats['str'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
 								rolls.append(self.str)
-							self.str = roll
+							self.stats['str'] = roll
 						elif split_s[0] == 'dex':
-							if self.dex != 0:
+							if self.stats['dex'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.dex)
-							self.dex = roll
+								rolls.append(self.stats['dex'])
+							self.stats['dex'] = roll
 						elif split_s[0] == 'con':
-							if self.con != 0:
+							if self.stats['con'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.con)
-							self.con = roll
+								rolls.append(self.stats['con'])
+							self.stats['con'] = roll
 						elif split_s[0] == 'int':
-							if self.int != 0:
+							if self.stats['int'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.int)
-							self.int = roll
+								rolls.append(self.stats['int'])
+							self.stats['int'] = roll
 						elif split_s[0] == 'wis':
-							if self.wis != 0:
+							if self.stats['wis'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.wis)
-							self.wis = roll
+								rolls.append(self.stats['wis'])
+							self.stats['wis'] = roll
 						elif split_s[0] == 'cha':
-							if self.cha != 0:
+							if self.stats['cha'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.cha)
-							self.cha = roll
+								rolls.append(self.stats['cha'])
+							self.stats['cha'] = roll
 						else:
 							print('[new_player] this should never happen, godspeed user')
 						del rolls[index]
@@ -468,11 +440,8 @@ class Party(Entity):
 			return False
 		return True
 if __name__ == '__main__':
-	for i in range(1,40):
-		print(f'{roll(20,-1)} {roll(20)} {roll(20,1)}')
-	b = Bieng(1,1,2)
-	print(b.str)
-	b.adv['speed']=4
-	print(b.rollDex('speed'))
-	#c = Culture()
-	#print(c.descPerson())	
+	b = Bieng(1,1,1)
+	b.ToScreen()
+	p = Player('test')
+	p.prompt()
+	print(p.stats['str'])

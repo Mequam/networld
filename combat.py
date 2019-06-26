@@ -14,18 +14,17 @@ def parse_num(word,var_dict):
 		if var_dict[word][1] <= 0:
 			#they have run out of calls to use the variable, delete it
 			del var_dict[word]
+			print('[combat] ' + word + ' has run out of calls')
 	else:
 		try:
 			num = parseDice(word)	
-		except:
-			print('unable to parse out a number!')	
+		except:	
 			return None
 	return num
 def findBiengIndex(bieng_arr,name):
 	for i in range(0,len(bieng_arr)):
 		if bieng_arr[i].name == name:
 			return i
-	print('[combat] ERROR: unable to target ' + name + ', incorrect name')	
 	return None
 	
 def parse_target(target,bieng_arr,caster):
@@ -44,63 +43,75 @@ def parse_target(target,bieng_arr,caster):
 		if name == 'n':
 			return None
 	return findBiengIndex(bieng_arr,name)
-def addStat(bieng,num,stat):
-	if stat == 'str':
-		bieng.str += num
-		newNum = bieng.str
-	elif stat == 'dex':
-		bieng.dex += num
-		newNum = bieng.dex
-	elif stat == 'con':
-		bieng.con += num
-		newNum = bieng.con
-	elif stat == 'int':
-		bieng.int += num
-		newNum = bieng.int
-	elif stat == 'wis':
-		bieng.wis += num
-		newNum = bieng.wis
-	elif stat == 'cha':
-		bieng.cha += num
-		newNum = bieng.cha
-	elif stat == 'ac':
-		bieng.ac += num
-		newNum = bieng.ac
-	elif stat == 'hp':
-		bieng.hp += num
-		newNum = bieng.hp
-	else:
-		print('[combat] ERROR: invalid stat!')
-		return None
-	print('[combat] set ' + bieng.name + ' ' + stat + ' to ' + str(newNum))
-	return True	
-
 def parse_command(command,var_dict,bieng_arr,caster):
+	def addStat(string,num,target,bieng_arr):
+		#this function takes a string and adds the given number to the correct bieng stat
+		if string == 'hp':
+			bieng_arr[target].hp += num
+			stat = bieng_arr[target].hp
+		elif string == 'ac':
+			bieng_arr[target].ac += num
+			stat = bieng_arr[target].ac
+		elif string == 'thaco':
+			bieng_arr[target].thaco += num
+			stat = bieng_arr[target].thaco
+		else:
+			try:
+				bieng_arr[target].stats[string] += num
+				stat = bieng_arr[target].stats[string]
+			except:
+				#TODO: it might be possible to make the program add a new stat when it detects one that does
+				#not already exist
+				print('[combat] ERROR: invalid stat detected!')
+				return None		
+		#alert the user that the bieng has been updated
+		print('[combat] set ' + bieng_arr[target].name + ' ' + string + ' to ' + str(stat))
+	
+	def getTarget(bieng_arr,cmd,caster):
+		if cmd != 'self':
+			#they are not targeting themselfs
+			target = findBiengIndex(bieng_arr,cmd)
+			if target == None:
+				#they are not targeting anyone else, so run the target routine
+				target = parse_target(cmd,bieng_arr,caster)
+		else:
+			#they want to target themselfs, so set the index to target the caster
+			target = findBiengIndex(bieng_arr,caster)
+		return target
+	
 	if command[0] == 'Add':
 		#get the number that they want to use in the modifictation
 		num = parse_num(command[1],var_dict)
 		if num == None:
 			print('[combat] ERROR, invalid number!')	
-			return None
+			return None		
 		#get the target that they want to use
-		target = parse_target(command[3],bieng_arr,caster)
+		target = getTarget(bieng_arr,command[3],caster)
 		if target == None:
+			#we were given an invalid target
 			return None
-		#perform the operation on the bieng
-		addStat(bieng_arr[target],num,command[4])		
+
+		#actualy perform the modification of the stat
+		addStat(command[4],num,target,bieng_arr)	
 	elif command[0] == 'Sub':
+		#get the number that they want to use in the modifictation
 		num = parse_num(command[1],var_dict)
 		if num == None:
-			return None
-		target = parse_target(command[3],bieng_arr,caster)
+			print('[combat] ERROR, invalid number!')	
+			return None		
+		#get the target that they want to use
+		target = getTarget(bieng_arr,command[3],caster)
 		if target == None:
+			#we were given an invalid target
 			return None	
-		addStat(bieng_arr[target],-1*num,command[4])			
+		
+		#perform the given operation on the target bieng
+		addStat(command[4],-1*num,target,bieng_arr)		
 	elif command[0] == 'Adv':
 		num = parse_num(command[1],var_dict)
 		if num == None:
 			return None
-		target = parse_target(command[3],bieng_arr,caster)
+		target = getTarget(bieng_arr,command[3],caster)
 		if target == None:
 			return None
 		bieng_arr[target].addAdv(command[4],num)
@@ -108,7 +119,7 @@ def parse_command(command,var_dict,bieng_arr,caster):
 		num = parse_num(command[1],var_dict)
 		if num == None:
 			return None
-		target = parse_target(command[3],bieng_arr,caster)
+		target = getTarget(bieng_arr,command[3],caster)
 		if target == None:
 			return None
 		bieng_arr[target].addAdv(command[4],-1*num)
@@ -137,7 +148,7 @@ def combat_wrapper(bieng_arr,party):
 	
 	#sort the bieng_arr based on initiative
 	def keyf(bieng):
-		return bieng.rollDex('initiative')
+		return bieng.check('dex','initiative')
 	bieng_arr.sort(key=keyf)
 	mod = len(bieng_arr)
 
@@ -151,38 +162,19 @@ def combat_wrapper(bieng_arr,party):
 			#they want to roll a dice type
 			print('[combat] ' + str(parseDice(command[1])))
 		elif command[0] == 'check':
-			#they want to make a stat check
-			#syntax: check stat [target] [subStat]
-			
-			#when subStat is None it is ignored by the roll functions, which is why we init it to None
-			subStat = None
-			#initilise the target to point to the bieng currently taking their turn
-			target = bieng_arr[Turn]
-			
-			if len(command) > 2:
-				if command[2] != 'self':
-					#the self target should refer to the bieng currently taking their turn
-					#so dont change it past what we inited it to be
-					target = bieng_arr[findBiengIndex(bieng_arr,command[2])]
-					if target == None:
-						print('[combat] ERROR: not a valid target')
-				#only bother checking if its greater than three if we know its greater than 2
-				if len(command) > 3:
-					subStat = command[3]
-			if command[1] == 'str':
-				roll = target.rollStr(subStat)
-			elif command[1] == 'dex':
-				roll = target.rollDex(subStat)
-			elif command[1] == 'con':
-				roll = target.rollCon(subStat)		
-			elif command[1] == 'int':
-				roll = target.rollInt(subStat)	
-			elif command[1] == 'wis':
-				roll = target.rollWis(subStat)
-			elif command[1] == 'cha':
-				roll = target.rollCha(subStat)
-			else:
-				print('[combat] ERROR: invalid stat recived!')
+			if len(command) > 1:
+				check = False
+				if command[1] != 'self':
+					for bieng in bieng_arr:
+						if bieng.name == command[1]:
+							roll = bieng.check(command[2:])
+							target = bieng
+							check = True
+							break
+				if not check:
+					#they did not set the stat to anything, target themselfs
+					roll = bieng_arr[Turn].check(command[1:])
+					target = bieng_arr[Turn]
 			print('[combat] ' + target.name + ' rolled a ' + str(roll))
 		elif command[0] == 'ls':	
 			for bieng in bieng_arr:
