@@ -1,3 +1,7 @@
+#TODO:need to make an inventory system for the players
+#TODO:need to add more entities to the game that can spawn
+#TODO:need to work on the network aspect of the game and allow for pcs to travel computers
+#TODO:need to work on the corruption
 import random
 import menu
 import GramGen
@@ -5,6 +9,7 @@ import make_node
 import entity
 import pickle
 import parse
+import combat
 from math import floor
 from uuid import getnode as get_mac
 
@@ -12,6 +17,8 @@ from uuid import getnode as get_mac
 #this function contains variables that can be used inside of the game loop
 def updateArrs(grid_arr,entity_arr):
 	try:
+		#TODO: need to make it so the program can delete entities without
+		#making the index that its targeting go over the length of the given array
 		appended = 0
 		for i in range(0,len(entity_arr)):
 			if entity_arr[i].x != player.x and entity_arr[i].y != player.y:
@@ -68,9 +75,11 @@ def game(partyname):
 		split_i = inputs.split(' ')
 		
 		#this is where we actualy runn the game
-		if split_i[0] == 'list members':
-			for player in party.players:
-				print(player.name)
+		if split_i[0] == 'list' and len(split_i) > 1:
+			if split_i[1] == 'members':
+				print('[networld] listing party members')
+				for player in party.players:
+					print(player.name)
 		elif split_i[0] in ['w','a','s','d']:	
 			#TODO:make a movement function that takes wasd as inputs and spits out
 			#really directions as outputs
@@ -141,6 +150,7 @@ def game(partyname):
 			elif split_i[1] == 'biome':
 				print(args[0].biome)
 		elif split_i[0] == 'tp' and len(split_i) > 2:
+			#this command is for development ONLY
 			try:
 				party.x = int(split_i[1])
 				party.y = int(split_i[2])
@@ -148,6 +158,19 @@ def game(partyname):
 				print('you see a ' + args[0].desc())
 			except:
 				return False
+		elif split_i[0] == 'combat':
+			#load all of the entites that are on the parties current grid and are biengs
+			#into the bieng arr, as well as all of the players
+			bieng_arr = []
+			for entity in args[2]:
+				if type(entity) is entity.Bieng:
+					bieng_arr.append(Bieng)
+			for player in party.players:
+				print(player)
+				bieng_arr.append(player)
+			print('[DEBUG] ' + str(len(bieng_arr)))
+			#send the party and the loaded bieng array to the combat menu
+			combat.combat_wrapper(bieng_arr,party)
 		return True	
 	
 	print(grid_arr)	

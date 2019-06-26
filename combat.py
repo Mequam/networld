@@ -43,6 +43,8 @@ def parse_target(target,bieng_arr,caster):
 		if name == 'n':
 			return None
 	return findBiengIndex(bieng_arr,name)
+#TODO:	need to make a file parser to run through a file and run this function on each line of the file
+#that way the players can make their own spells 
 def parse_command(command,var_dict,bieng_arr,caster):
 	def addStat(string,num,target,bieng_arr):
 		#this function takes a string and adds the given number to the correct bieng stat

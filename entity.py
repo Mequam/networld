@@ -266,6 +266,7 @@ class Bieng(Entity):
 	
 class Player(Bieng):
 	def __init__(self,name=None):
+		Bieng.__init__(self,1,1,1)
 		if name == None:
 			self.name = 'J0hn Doe'
 		else:
@@ -394,6 +395,10 @@ class Party(Entity):
 			self.players = []
 		else:
 			self.players = players
+	def save(self,fname=None):
+		if fname == None:
+			fname = 'saves/parties/' + self.name + '.pkl'
+		Entity.save(self,fname)
 	def prompt(self):
 		#the user wants to start a new party, so prompt them for the desired information
 	
@@ -415,7 +420,7 @@ class Party(Entity):
 				break
 		print('[new party] saving the party!')
 		try:
-			self.save('saves/parties/'+self.name)
+			self.save()
 		except:
 			print('[new party] OH NO, unable to save the party :(')	
 	def addPlayer(self,player):
