@@ -10,6 +10,7 @@ import entity
 import pickle
 import parse
 import combat
+import entity
 from math import floor
 from uuid import getnode as get_mac
 
@@ -117,13 +118,17 @@ def game(partyname):
 				updateArrs(args[1],args[2])
 
 				#update entitiys in the grids node only if the players leave their current node
-				for i in range(0,len(args[1])):
+				i = 0
+				while i < len(args[1]):
 					#print(entity)
 					spawn = args[1][i].AI(party)
 					if spawn == -1:
 						del args[1][i]
+						#avoid incrimenting i when we delete an entity so that way we dont go over the desired index
+						continue
 					elif spawn != None:
 						args[1].append(spawn)
+					i += 1
 				print(args[1])
 			else:
 				#we didnt leave the node that we are in, there is a chance that we will spawn an encounter
