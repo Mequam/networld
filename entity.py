@@ -153,13 +153,10 @@ class Settler(Entity):
 		#the settler has no idea where home is, so it wanders aimlessly seaching
 		#for a place to place a new spawner
 		self.move(random.randrange(-1,2),random.randrange(-1,2))
-		if random.randrange(1,100) < make_node.node(self.x,self.y).hostil:
-			#spawn a city
-			print('[setler] spawning a city at ' + str([self.x,self.y]))
+		if random.randrange(1,100) < make_node.node(self.x,self.y).hostil:	
 			return Town(self.culture,self.x,self.y)
 		else:
-			if random.randrange(1,101) < 50:
-				print('[settler] deleting a ' + self.culture.name + ' settler')
+			if random.randrange(1,101) < 50:	
 				return -1
 class Town(Entity):
 	#each town needs to have a description and a culture
@@ -186,8 +183,7 @@ class Town(Entity):
 	def AI(self,party):
 		#have a random chance of spawning a settler based on the hostlity of the node the town finds itself in
 		print(str([self.x,self.y]) + ' at ' + self.name)
-		if random.randrange(1,101) < make_node.node(self.x,self.y).hostil:
-			print('[entity] spawning a seteller')
+		if random.randrange(1,101) < make_node.node(self.x,self.y).hostil:	
 			return Settler(self.culture,self.x+random.randrange(1,20))
 		if party.x == self.x and party.y == self.y:
 			#the party found our town!, tell them whats up

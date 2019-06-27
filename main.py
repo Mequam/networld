@@ -120,7 +120,6 @@ def game(partyname):
 				#update entitiys in the grids node only if the players leave their current node
 				i = 0
 				while i < len(args[1]):
-					#print(entity)
 					spawn = args[1][i].AI(party)
 					if spawn == -1:
 						del args[1][i]
@@ -129,7 +128,6 @@ def game(partyname):
 					elif spawn != None:
 						args[1].append(spawn)
 					i += 1
-				print(args[1])
 			else:
 				#we didnt leave the node that we are in, there is a chance that we will spawn an encounter
 				#roll for that chance
@@ -170,10 +168,8 @@ def game(partyname):
 			for entity in args[2]:
 				if type(entity) is entity.Bieng:
 					bieng_arr.append(Bieng)
-			for player in party.players:
-				print(player)
+			for player in party.players:	
 				bieng_arr.append(player)
-			print('[DEBUG] ' + str(len(bieng_arr)))
 			#send the party and the loaded bieng array to the combat menu
 			combat.combat_wrapper(bieng_arr,party)
 		return True	
