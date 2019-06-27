@@ -1,4 +1,5 @@
 #this file contains the combat menu and the combat parsing system
+import entity
 import menu
 from cdice import parse as parseDice
 
