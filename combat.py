@@ -251,7 +251,17 @@ def combat_wrapper(bieng_arr,party):
 			print('-'*30)	
 			print('[command] it is currently ' + bieng_arr[Turn].name + '\'s turn')		
 		command = input('(combat)> ').split(' ')				
-		
+def combat_filter(entity_arr,party):
+	#filter out anything that is not a bieng from getting passed to the function
+	bieng_arr = []
+	for thing in entity_arr:
+		if type(thing) is entity.Bieng:	
+			bieng_arr.append(thing)
+	for player in party.players:
+		bieng_arr.append(player)
+	print(entity_arr)
+	print(bieng_arr)
+	combat_wrapper(bieng_arr,party)		
 #Dis [num] to [target] {sub check && ! tag ind:state}
 #Adv [num] to [target] {sub check && ! tag ind:state}
 #Sub [num] from [target] {sub check && ! tag specif:state}
@@ -268,8 +278,8 @@ if __name__ == '__main__':
 	a.name = 'Rex'
 	b = entity.Bieng(2,2,2)
 	b.name = 'test'
-	arr = [a,b]	
-	combat_wrapper(arr,entity.Party())
+	arr = [a,b,1,2,3]	
+	combat_filter(arr,entity.Party())
 #TargetLineRange
 #TargetRadiusRange
 #TargetEyeContact

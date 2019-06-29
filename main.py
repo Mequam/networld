@@ -16,7 +16,7 @@ from uuid import getnode as get_mac
 
 #this is a wrapper function for the game menu that is actualy the main loop of the game
 #this function contains variables that can be used inside of the game loop
-def updateArrs(grid_arr,entity_arr):
+def updateArrs(grid_arr,entity_arr,player):
 	try:
 		#TODO: need to make it so the program can delete entities without
 		#making the index that its targeting go over the length of the given array
@@ -27,7 +27,9 @@ def updateArrs(grid_arr,entity_arr):
 				grid_arr.append(entity_arr[i])
 				del entity_arr[i]
 				appended += 1
+		print('[Debug] party pos ' + str(player.x) + ' ' + str(player.y))
 		for i in range(0,len(grid_arr)-appended):
+			print('[Debug] checking entity at ' + str(grid_arr[i].x) + ' ' + str(grid_arr[i].y))
 			if grid_arr[i].x == player.x and grid_arr[i].y == player.y:
 				print('[*] found a matching entity!')
 				entity_arr.append(grid_arr[i])
@@ -73,6 +75,7 @@ def game(partyname):
 
 	@menu.menu('networld')
 	def game_menu(inputs,args):
+		import entity
 		split_i = inputs.split(' ')
 		
 		#this is where we actualy runn the game
@@ -81,6 +84,12 @@ def game(partyname):
 				print('[networld] listing party members')
 				for player in party.players:
 					print(player.name)
+			if split_i[1] == 'towns':
+				print('[networld] listing towns in your node')
+				print(args[2])
+				for e in args[2]:	
+					if type(e) is type(entity.Town()):
+						print(e.name + ', a ' + e.culture.name + ' town')
 		elif split_i[0] in ['w','a','s','d']:	
 			#TODO:make a movement function that takes wasd as inputs and spits out
 			#really directions as outputs
@@ -115,7 +124,7 @@ def game(partyname):
 				
 				#update the entity arrays to load all of the entities from the grid array that match the players current poss
 				#are loaded correctly
-				updateArrs(args[1],args[2])
+				updateArrs(args[1],args[2],party)
 
 				#update entitiys in the grids node only if the players leave their current node
 				i = 0

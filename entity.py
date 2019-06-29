@@ -5,6 +5,7 @@ import menu as Menu
 import pickle
 import GramGen
 import nameGen
+import combat
 from math import floor
 from statement import makeState
 def makeStat():
@@ -160,7 +161,7 @@ class Settler(Entity):
 				return -1
 class Town(Entity):
 	#each town needs to have a description and a culture
-	#what would the culture look like?
+	#what would the culture look like?`
 	def __init__(self,culture,x=None,y=None,name=None):
 		#steal the entity init for x and y
 		Entity.__init__(self,x,y)
@@ -176,10 +177,48 @@ class Town(Entity):
 		self.buildings = []	
 		for i in range(1,11):
 			self.buildings.append(culture.makeBuilding())
+		self.ppl = []
+		for i in range(0,random.randrange(floor(len(self.buildings)/2)+1,len(self.buildings)+2)):
+			self.ppl.append(self.culture.nameg.makeWord())
+		print(self.ppl)
+		self.ppl_desc = []
+		for name in self.ppl:
+			self.ppl_desc.append(self.culture.descPerson())
+		self.g = GramGen.generator('gen.xml')
+		self.g.addNode('noun','TownG')
+		self.g.addNode('TownG','TownsFolk')
+		self.g.addNode('TownG','TownBuilding')
+		self.g.addNode('TownG','TownEncounter')
+
+		self.g.addWordList('TownsFolk','town_noun','TownsFolk',self.ppl)
+		self.g.addWordList('TownBuilding','town_noun','TownBuilding',self.buildings)
+			
+		encounters = ['theres a {tag noun || sub noun:noun} {tag prep || sub prep:prep} the {tag TownBuilding:town_noun}',
+				'{tag TownsFolk:town_noun} is {tag prep || sub prep:prep} a {tag dist:adj} {tag TownBuilding:town_noun}',
+				'you {tag sense_far:verb} {tag TownsFolk:town_noun} {sub noun || tag noun:verb_ing} a {tag noun || sub noun:noun}',
+				'you {tag sense_far:verb} a {tag TownsFolk:town_noun} {tag noun || sub noun:verb_ing}',
+				'you {sub sense:verb} somthing {tag noun || sub noun:adj}']	
+		self.g.addWordList('TownEncounter','town_sent','TownEncounter',encounters)
+
 		
-		g = GramGen.generator('gen.xml')
+
+		self.g.addNode('TownG','occ')
+		self.g.addWordList('occ','town_noun','occ',self.culture.gen.lists['occ'])
+		
+		self.g.addNode('TownG','TownDesc')
+		#this needs to create descriptions of the town
+		desc = ['town of {tag occ:town_noun}s',
+			'town of {sub sentient:noun}s',
+			'{tag noun || sub noun:adj} town',
+			'town full of {tag noun || sub noun:noun}s',
+			'{sub noun || tag noun:noun} town']	
+		self.g.addWordList('TownDesc','town_desc','TownDesc',desc)
+				
+
+		self.g.addNode('TownG','TownView')
+		self.g.addWordList('TownView','town_desc','TownView',['{tag prep:prep} you you {tag sense_far:verb} a {tag TownDesc:town_desc}'])
 		#set the description for the town
-		self.desc = g.schema('{tag town:noun_clause}')
+		self.desc = self.g.schema('{tag TownView:town_desc}')
 	def AI(self,party):
 		#have a random chance of spawning a settler based on the hostlity of the node the town finds itself in
 		print(str([self.x,self.y]) + ' at ' + self.name)
@@ -189,6 +228,72 @@ class Town(Entity):
 			#the party found our town!, tell them whats up
 			#this generation could probably use some more work, but for now its ok
 			print('[*] in the distance you see a ' + self.culture.name +' '+ self.desc)
+	def shell(self,local_arr,party):	
+		inp = ['a']
+		while inp[0] != 'q':
+			inp = input('(town)> ').split(' ')
+			if inp[0] == 'combat':
+				#TODO: figure out a better way to impliment this in the combat file
+				bieng_arr = []
+				for thing in local_arr:
+					if type(thing) is Bieng:
+						bieng_arr.append(thing)
+				for player in party.players:
+					bieng_arr.append(player)
+				
+				combat.combat_wrapper(bieng_arr,party)
+			elif inp[0] == 'list':
+				if len(inp) > 1:
+					#they gave us somthing to list
+					sucess = False
+					if 'people' in inp or 'all' in inp:
+						sucess = True
+						for i in range(0,len(self.ppl)):
+							print(str(i+1) + ':' + self.ppl[i])
+					if 'all' in inp or ('buildings' in inp and 'people' in inp):
+						print('-'*10)
+					if 'buildings' in inp or 'all' in inp:
+						sucess = True
+						for build in self.buildings:
+							print(build)
+					if not sucess:
+						print('[town] ERROR: unrecognised list target')
+						print('[town] options are buildings or people')			
+				else:
+					#they did not tell us what they want to see, complain!
+					print('[town] ERROR: somthing to list is required')
+					print('[town] options are buildings or people')	
+			if inp[0] == 'desc':
+				if len(inp) > 1:
+					
+					#they gave us arguments
+					if inp[1] == 'all':
+						for i in range(0,len(self.ppl)):
+							print(self.ppl[i] + ':' + self.ppl_desc[i])
+					else:
+						index = 0
+						try:
+							index = int(inp[1])-1
+							if -1 < index < len(self.ppl):
+								found = True
+						except:
+							print('[Debug] searching for name')
+							found = False
+							for i in range(0,len(self.ppl)):
+								if self.ppl[i] == inp[1]:
+									index = i
+									found = True
+									break
+						if found:
+							print(self.ppl_desc[index])
+						else:
+							print('[town] ERROR: unable to find ' + str(index))
+				else:
+					#we were not given any arguments, complain
+					print('[town] ERROR: person name or index required')
+			else:
+				pass
+			
 class Bieng(Entity):
 	#this class represents anything that the players can through damage at
 	def __init__(self,x,y,lvl):
@@ -441,8 +546,10 @@ class Party(Entity):
 			return False
 		return True
 if __name__ == '__main__':
+	c = Culture()
+	t = Town(c)
+	print(t.desc)
+	a = Bieng(1,1,1)
 	b = Bieng(1,1,1)
-	b.ToScreen()
-	p = Player('test')
-	p.prompt()
-	print(p.stats['str'])
+	p = Party()
+	t.shell([a,b],p)

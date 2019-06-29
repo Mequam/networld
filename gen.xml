@@ -3,6 +3,12 @@
 	<word type='adv'>words/adv/noun.txt</word>
 	<word type='color'>words/adj/color.txt</word>
 	<word type='verb_ns'>words/verb/verbno_s.txt</word>	
+	<prep>
+		<word type='prep'>words/prep/prep.txt</word>
+		<in>
+			<word type='prep'>word/prep/prep_in.txt</word>
+		</in>
+	</prep>
 	<dist>
 		<word type='adj'>words/adj/dist.txt</word>
 	</dist>
