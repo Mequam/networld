@@ -48,8 +48,8 @@ class node:
 		self.gen.addNode('node_biome_sent','node_biome_an')
 		self.gen.addNode('node_biome_sent','node_biome_pl')
 
-		animal_biome_sent = ['a {tag node_biome:node_noun} teaming with {tag node_animal:node_noun}s',
-'a {node_biome:node_noun} full of {tag node_animal:node_noun}s']
+		animal_biome_sent = ['{tag node_biome:node_noun} teaming with {tag node_animal:node_noun}s',
+'{node_biome:node_noun} full of {tag node_animal:node_noun}s']
 		self.gen.addWordList('node_biome_an','node_noun2','node_biome_an',animal_biome_sent)
 		
 		plant_biome_sent = ['{tag node_biome:node_noun} specled with {tag node_plant:node_noun}s',
@@ -93,14 +93,13 @@ class node:
 			return 'encounter!'
 	def desc(self):
 		if len(self.plants) > 1 and len(self.animals) > 1:
-			return 'you see a ' + self.gen.schema('{sub node_biome_sent:node_noun2}')
+			return self.gen.schema('you see a {sub node_biome_sent:node_noun2}')
 		elif len(self.plants) > 1:
 			return 'you see a ' + self.gen.schema('{tag node_biome_pl:node_noun2}')
 		elif len(self.plants) > 1:
-			return 'you see a ' + self.gen.schema('{tag node_biome_an:node_noun2}')
+			return 'you see a ' + self.gen.schema('{tag node_biome_an:node_noun2}')	
 		else:
 			return 'a barren ' + self.biome + ' streches out before you'
-		return self.gen.schema('{tag node_biome:sent}')
 	def getPlant(self):
 		return self.gen.schema('{tag node_plant:node_noun}')
 	def strPlants(self):

@@ -153,6 +153,7 @@ class Settler(Entity):
 	def AI(self,party):
 		#the settler has no idea where home is, so it wanders aimlessly seaching
 		#for a place to place a new spawner
+		pass
 		self.move(random.randrange(-1,2),random.randrange(-1,2))
 		if random.randrange(1,100) < make_node.node(self.x,self.y).hostil:	
 			return Town(self.culture,self.x,self.y)
@@ -180,7 +181,6 @@ class Town(Entity):
 		self.ppl = []
 		for i in range(0,random.randrange(floor(len(self.buildings)/2)+1,len(self.buildings)+2)):
 			self.ppl.append(self.culture.nameg.makeWord())
-		print(self.ppl)
 		self.ppl_desc = []
 		for name in self.ppl:
 			self.ppl_desc.append(self.culture.descPerson())
@@ -220,14 +220,14 @@ class Town(Entity):
 		#set the description for the town
 		self.desc = self.g.schema('{tag TownView:town_desc}')
 	def AI(self,party):
-		#have a random chance of spawning a settler based on the hostlity of the node the town finds itself in
-		print(str([self.x,self.y]) + ' at ' + self.name)
+		#have a random chance of spawning a settler based on the hostlity of the node the town finds itself in	
+		pass
 		if random.randrange(1,101) < make_node.node(self.x,self.y).hostil:	
 			return Settler(self.culture,self.x+random.randrange(1,20))
 		if party.x == self.x and party.y == self.y:
 			#the party found our town!, tell them whats up
 			#this generation could probably use some more work, but for now its ok
-			print('[*] in the distance you see a ' + self.culture.name +' '+ self.desc)
+			print('[*] ' + self.desc)
 	def shell(self,local_arr,party):	
 		inp = ['a']
 		while inp[0] != 'q':
@@ -319,7 +319,11 @@ class Bieng(Entity):
 		self.lvl = lvl
 			
 		self.adv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}
-	
+	def rollHit(self,target):
+		if self.check(['hit','attack','str']) >= self.thaco - target.ac:
+			return True
+		else:
+			return False	
 	def check(self,given_stats,dieType=20):
 		mod = 0
 		for stat in self.stats:
