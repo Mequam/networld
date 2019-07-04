@@ -210,7 +210,7 @@ def main(inputs):
 	elif split_i[0] == 'new':
 		i = parse.selectPrompt('[main menu] are you sure that you would like to start a new party?\n(y/n)> ',['y','n'])
 		if i == 'y':
-			p = entity.Party()
+			p = Entity.Party()
 			p.prompt()
 	elif split_i[0] == 'party':
 		party()
