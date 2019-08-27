@@ -37,6 +37,15 @@ def game(partyname):
 	#the grid array represents any entity not on the same node as the players
 	#load the grid and the partyname
 	grid_arr = parse.loadArr('saves/grid.pkl')
+	cultures = parse.loadArr('saves/cultures.pkl')
+	if not cultures:
+		random.seed(get_mac())
+		print('[*] generating cultures!')
+		cultures = []
+		for i in range(2,5):
+			cultures.append(Entity.Culture())
+		#this array should only be written to once, so we dont save it later in generation
+		parse.saveArr(cultures,'saves/cultures.pkl')	
 	if not grid_arr:
 		#we need to make cultures and then populate the world with cities
 		print('[*] GENERATING THE GRID *^*')	
@@ -44,9 +53,6 @@ def game(partyname):
 		offset = 1
 
 		random.seed(get_mac())
-		cultures = []
-		for i in range(2,5):
-			cultures.append(Entity.Culture())
 		for culture in cultures:
 			grid_arr.append(Entity.Town(culture,random.randrange(1,21),random.randrange(1,21)))
 		#for town in grid_arr:
