@@ -1,3 +1,4 @@
+import pickle
 def get_enclosed(parenth=['[',']']):
     def decor(fun):
         def parse(expr,parenth2=parenth,**args):

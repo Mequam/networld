@@ -55,7 +55,7 @@ def game(partyname):
 	#the entity array represents entities in the same cords as the players
 	entity_arr = parse.loadArr('saves/entity.pkl')
 	if not entity_arr:
-		print('no entities found, eh')
+		print('[*] no entities found, eh')
 		entity_arr = []
 
 	party = Entity.Party() 
@@ -66,7 +66,7 @@ def game(partyname):
 	#time we need to access a variable inside of it
 
 
-	node = make_node.node(1,1)
+	node = make_node.node(party.x,party.y)
 
 	inputs = 'blah'
 	while inputs != 'q':
@@ -194,11 +194,20 @@ def game(partyname):
 				bieng_arr.append(player)
 			#send the party and the loaded bieng array to the combat menu
 			combat.combat_wrapper(bieng_arr,party,cultures)	
+		elif split_i[0] == 'save':
+			#save everything!!!
+			print('[networld] saving!')
+			party.save()
+			if not parse.saveArr(entity_arr,'saves/entity.pkl'):
+				print('[networld: ERROR] could not save the entity array!')
+			if not parse.saveArr(grid_arr,'saves/grid.pkl'):
+				print('[networld: ERROR] could not save the grid array!')	
+	print('[networld] saving and exiting to the main menu!')
+	party.save()
+	parse.saveArr(entity_arr,'saves/entity.pkl')
+	parse.saveArr(grid_arr,'saves/grid.pkl')	
+	return True
 		
-	#exit the main loop of the game
-	parse.saveArr(grid_arr,'saves/grid.pkl')
-	parse.saveArr(entity_arr,'saves/entity.pkl')	
-
 @menu.menu('main menu')
 def main(inputs):
 	split_i = inputs.split(' ')
