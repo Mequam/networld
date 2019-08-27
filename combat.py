@@ -1,8 +1,9 @@
 #this file contains the combat menu and the combat parsing system
+from random import randrange
 import entity
 import menu
 from cdice import parse as parseDice
-
+import GramGen
 #command is a split command where each index of the array is a different word in the command
 #need to add the dice parser here
 
@@ -65,7 +66,7 @@ def parse_command(command,var_dict,bieng_arr,caster):
 			except:
 				#TODO: it might be possible to make the program add a new stat when it detects one that does
 				#not already exist
-				print('[combat] ERROR: invalid stat detected!')
+				print('[combat: ERROR] invalid stat detected!')
 				return None		
 		#alert the user that the bieng has been updated
 		print('[combat] set ' + bieng_arr[target].name + ' ' + string + ' to ' + str(stat))
@@ -86,7 +87,7 @@ def parse_command(command,var_dict,bieng_arr,caster):
 		#get the number that they want to use in the modifictation
 		num = parse_num(command[1],var_dict)
 		if num == None:
-			print('[combat] ERROR, invalid number!')	
+			print('[combat: ERROR] invalid number!')	
 			return None		
 		#get the target that they want to use
 		target = getTarget(bieng_arr,command[3],caster)
@@ -100,14 +101,13 @@ def parse_command(command,var_dict,bieng_arr,caster):
 		#get the number that they want to use in the modifictation
 		num = parse_num(command[1],var_dict)
 		if num == None:
-			print('[combat] ERROR, invalid number!')	
+			print('[combat: ERROR] invalid number!')	
 			return None		
 		#get the target that they want to use
 		target = getTarget(bieng_arr,command[3],caster)
 		if target == None:
 			#we were given an invalid target
-			return None	
-		
+			return None		
 		#perform the given operation on the target bieng
 		addStat(command[4],-1*num,target,bieng_arr)		
 	elif command[0] == 'Adv':
@@ -145,7 +145,7 @@ def checkname(bieng_arr,name):
 			return False
 	return True
 
-def combat_wrapper(bieng_arr,party):
+def combat_wrapper(bieng_arr,party,cultures):
 	#TODO: figure out a way to make sure that only biengs are contained inside of the bieng arr
 	#this function is a wrapper function containing the variables for the combatMenu below it	
 	
@@ -186,9 +186,23 @@ def combat_wrapper(bieng_arr,party):
 		elif command[0] == 'show':
 			target = bieng_arr[Turn]
 			if len(command) > 1:
-				if command[1] != 'self':
-					target = bieng_arr[findBiengIndex(bieng_arr,command[1])]
-			target.ToScreen(command)
+				ostr = ''
+				i = 1
+				while i < len(command) and command[i] != ':':
+					ostr += command[i] + ' '
+					i += 1
+				ostr = ostr[0:-1]	
+				if ostr != 'self':
+					B_i = findBiengIndex(bieng_arr,ostr)
+					if B_i == None:
+						print('[combat: WARNING] unable to find given Bieng!')
+						print('[combat: WARNING] defaulting to first Bieng!')
+						B_i = 0
+					target = bieng_arr[B_i]
+			if len(command) > i+1:
+				target.ToScreen(command[i+1:])
+			else:
+				target.ToScreen(['all'])
 		elif command[0] == 'hit':
 			target = bieng_arr[Turn]
 			if len(command) > 1:
@@ -208,26 +222,37 @@ def combat_wrapper(bieng_arr,party):
 		elif command[0] == 'turn':
 			print('[command] it is currently ' + bieng_arr[Turn].name + '\'s turn')
 		elif command[0] == 'addEntity':
-			if len(command) > 1:
-				#add an entity of a given level with the optional given name to the bieng_arr
-				e = entity.Bieng(party.x,party.y,int(command[1]))
-				if len(command) > 2:
-					#they gave us a name, load it
-					name = command[2]
-				else:
-					#they did not give us a valid name so default to unamed
-					name = 'unamed'
-				num = 0
-				testname = name
-				#make sure that the name we want to use does not exist
-				#and if it does add a number after it
-				while not checkname(bieng_arr,testname):
-					num += 1
-					testname = name + str(num)
-				e.name = testname
-				bieng_arr.append(e)	
+			#add an entity of a given level with the optional given name to the bieng_arr
+			try:
+				x = int(command[1])
+			except:
+				x = randrange(1,21)	
+			e = entity.Bieng(party.x,party.y,x)	
+			if len(command) > 2:
+				#they gave us a name, load it
+				name = command[2]
 			else:
-				print('[combat] ERROR: entity level required!')
+				#they did not give us a valid name so default to unamed
+				#so generate a silly one ourselfs
+				if len(cultures) == 0:
+					name = 'unamed'
+				else:
+					g = GramGen.generator('gen.xml')
+					name = cultures[randrange(0,len(cultures))].nameg.makeWord() + g.schema(', {sub noun || tag noun:verb_ns}er of {sub noun:noun}s')  
+			
+			#make sure that the name we want to use does not exist
+			#and if it does add a number after it
+			num = 0
+			testname = name
+			while not checkname(bieng_arr,testname):
+				num += 1
+				testname = name + str(num)
+			e.name = testname
+			try:	
+				bieng_arr.append(e)
+				print('[combat] added level ' + str(e.lvl) + ' ' + e.name)
+			except:
+				print('[combat: ERROR] unkown error occured while adding the entity to the array')	
 		elif command[0] == 'removeEntity':
 			if len(command) > 1:
 				print(command[1])
@@ -251,7 +276,7 @@ def combat_wrapper(bieng_arr,party):
 			print('-'*30)	
 			print('[command] it is currently ' + bieng_arr[Turn].name + '\'s turn')		
 		command = input('(combat)> ').split(' ')				
-def combat_filter(entity_arr,party):
+def combat_filter(entity_arr,party,cultures):
 	#filter out anything that is not a bieng from getting passed to the function
 	bieng_arr = []
 	for thing in entity_arr:
@@ -261,16 +286,8 @@ def combat_filter(entity_arr,party):
 		bieng_arr.append(player)
 	print(entity_arr)
 	print(bieng_arr)
-	combat_wrapper(bieng_arr,party)		
-#Dis [num] to [target] {sub check && ! tag ind:state}
-#Adv [num] to [target] {sub check && ! tag ind:state}
-#Sub [num] from [target] {sub check && ! tag specif:state}
-#Add [num] to [target] {sub check && ! tag specif:state}
-#Set {tag letter:state} to [target/num] for (number) calls
-#Roll [dice]
-#Add token [token] to [target]
-#Hack [target program]
-#Token (number) statements
+	combat_wrapper(bieng_arr,party,cultures)		
+
 if __name__ == '__main__':
 	print(parseDice('1d20'))
 	import entity
@@ -279,7 +296,7 @@ if __name__ == '__main__':
 	b = entity.Bieng(2,2,2)
 	b.name = 'test'
 	arr = [a,b,1,2,3]	
-	combat_filter(arr,entity.Party())
+	combat_filter(arr,entity.Party(),[])
 #TargetLineRange
 #TargetRadiusRange
 #TargetEyeContact

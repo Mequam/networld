@@ -193,7 +193,7 @@ def game(partyname):
 			for player in party.players:	
 				bieng_arr.append(player)
 			#send the party and the loaded bieng array to the combat menu
-			combat.combat_wrapper(bieng_arr,party)	
+			combat.combat_wrapper(bieng_arr,party,cultures)	
 		
 	#exit the main loop of the game
 	parse.saveArr(grid_arr,'saves/grid.pkl')
@@ -202,17 +202,19 @@ def game(partyname):
 @menu.menu('main menu')
 def main(inputs):
 	split_i = inputs.split(' ')
-	if split_i[0].lower() == 'h':
+	if split_i[0].lower() == '?':
 		print('[main menu] list of commands')
-		print('\t"start"		start the game')
-		print('\t"party"   		enter the the party management menu')
-		print('\t"q"       		exit the game')
+		print('\t"start" [party name]		start the game as the given party')
+		print('\t"party"   		        enter the the party management menu')
+		print('\t"q"       			exit the game')
+		print('\t"new"				start a new party')
 	elif split_i[0] == 'new':
 		i = parse.selectPrompt('[main menu] are you sure that you would like to start a new party?\n(y/n)> ',['y','n'])
 		if i == 'y':
 			p = Entity.Party()
 			p.prompt()
 	elif split_i[0] == 'party':
+		#need to work on this input
 		party()
 	elif len(split_i) > 1 and split_i[0] == 'start':
 		game(split_i[1])
