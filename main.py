@@ -17,23 +17,29 @@ from cdice import parse as parseDice
 #this is a wrapper function for the game menu that is actualy the main loop of the game
 #this function contains variables that can be used inside of the game loop
 def updateArrs(grid_arr,entity_arr,player):
-	try:
-		appended = 0
-		for i in range(0,len(entity_arr)):
-			if entity_arr[i].x != player.x and entity_arr[i].y != player.y:
-				#somthing in the entity array is not on the same grid as the players, move it to the other array
-				grid_arr.append(entity_arr[i])
-				del entity_arr[i]
-				appended += 1	
-		for i in range(0,len(grid_arr)-appended):	
-			if grid_arr[i].x == player.x and grid_arr[i].y == player.y:
-				print('[*] found a matching entity!')
-				entity_arr.append(grid_arr[i])
-				#remove the entity from the grid array after placing it into the entity array
-				del grid_arr[i]
-		return True
-	except:
-		return False	
+	appended = 0
+	i = 0
+	while i < len(entity_arr):
+		if entity_arr[i].x != player.x or entity_arr[i].y != player.y:
+			#somthing in the entity array is not on the same grid as the players, move it to the other array
+			grid_arr.append(entity_arr[i])
+			del entity_arr[i]
+			appended += 1
+		else:
+			#only incriment i if we do NOT want to remove an entity from the current node
+			i += 1
+	
+	#theres no need to check the entities we already appended	
+	i = 0
+	while i < len(grid_arr)-appended:	
+		if grid_arr[i].x == player.x and grid_arr[i].y == player.y:
+			print('[*] found a matching entity!')
+			entity_arr.append(grid_arr[i])
+			#remove the entity from the grid array after placing it into the entity array
+			del grid_arr[i]
+		else:
+			i += 1
+	return True
 def game(partyname):	
 	#the grid array represents any entity not on the same node as the players
 	#load the grid and the partyname

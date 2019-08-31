@@ -151,7 +151,7 @@ class Settler(Entity):
 	def __init__(self,culture,x=None,y=None):
 		Entity.__init__(self,x,y)
 		self.culture = culture
-		self.name = culture.nameg.makeWord()
+		self.name = culture.nameg.makeWord()	
 		Settler.count += 1
 	def AI(self,party):
 		#the settler has no idea where home is, so it wanders aimlessly seaching
@@ -161,16 +161,19 @@ class Settler(Entity):
 		x = random.randrange(-1,2)
 		y = random.randrange(-1,2)	
 		self.move(x,y)
-
-		#only spawn a new town if there are less than 20 towns
-		if random.randrange(1,100) < make_node.node(self.x,self.y).hostil and Town.count < 10:	
-			return Town(self.culture,self.x,self.y)
-		else:
+		#so the goal here is to minimise the use of the node.hostil variable
+		#as we have to create a whole new node to use it
+		#so only make a new node when we dont have more cities to generate
+		if Town.count < 20:	
+			#TODO:Settlers need to run into players while their out exploring and alert them of their presence
+			#otherwise theres not really a point in having any settlers wandering the wastes
+			if random.randrange(1,100) < make_node.node(self.x,self.y).hostil:	
+				return Town(self.culture,self.x,self.y)
 			#delete ourselfs if we fail our survival check
-			if random.randrange(1,101) < 50:
-				#remove a count for the settler
-				self.count -= 1	
-				return -1
+		if random.randrange(1,101) < 30:
+			#remove a count for the settler
+			self.count -= 1	
+			return -1
 class Town(Entity):
 	#each town needs to have a description and a culture
 	#what would the culture look like?`
@@ -231,24 +234,32 @@ class Town(Entity):
 		self.g.addWordList('TownView','town_desc','TownView',['{tag prep:prep} you you {tag sense_far:verb} a {tag TownDesc:town_desc}'])
 		#set the description for the town
 		self.desc = self.g.schema('{tag TownView:town_desc}')
-		
+	
+		#store the hostility of a node so that way we dont have to re-compute EVERY node that has a town in it every time 
+		#we run the town AI
+		self.hostil = make_node.node(self.x,self.y).hostil	
 		#incriment the total of all of the towns, that way the game knows when to STOP spawning towns
 		Town.count += 1
 	def AI(self,party):
 		#have a random chance of spawning a settler based on the hostlity of the node the town finds itself in	
 
 		#there should never be very many settlers on the board at once
-		if random.randrange(1,101) < make_node.node(self.x,self.y).hostil and Settler.count < 5:	
+		if Settler.count < 5 and random.randrange(1,101) < self.hostil:	
 			return Settler(self.culture,self.x,self.y)
 		if party.x == self.x and party.y == self.y:
 			#the party found our town!, tell them whats up
 			#this generation could probably use some more work, but for now its ok
-			print('[*] ' + self.desc)
+			print('['+self.name+'] ' + self.desc)
 	def shell(self,local_arr,party,cultures):
 		#this is a menu used to interact with a given town	
 		inp = ['a']
+
+		#set up all of the prompts with the town name
+		op = '[' + self.name + '] '
+		ep = '[' + self.name + ': ERROR] '
+		ip = '(' + self.name + ')> '
 		while inp[0] != 'q':
-			inp = input('(town)> ').split(' ')
+			inp = input(ip).split(' ')
 			if inp[0] == 'combat':	
 				bieng_arr = []
 				for thing in local_arr:
@@ -263,11 +274,11 @@ class Town(Entity):
 				#TODO: ive used this command in three places now, it could REEEALY be turned into a function somewhere
 				if len(inp) > 1:
 					try:
-						print('[town] ' + str(parseDice(inp[1])))
+						print(op + str(parseDice(inp[1])))
 					except:
-						print('[town: ERROR] invalid dice expresion!')
+						print(ep + 'invalid dice expresion!')
 				else:
-					print('[town: ERROR] dice expresion required!')
+					print(ep + 'dice expresion required!')
 			elif inp[0] == 'list':
 				if len(inp) > 1:
 					#they gave us somthing to list
@@ -283,12 +294,12 @@ class Town(Entity):
 						for build in self.buildings:
 							print(build)
 					if not sucess:
-						print('[town] ERROR: unrecognised list target')
-						print('[town] options are buildings or people')			
+						print(ep + 'unrecognised list target')
+						print(op + 'options are buildings or people')			
 				else:
 					#they did not tell us what they want to see, complain!
-					print('[town] ERROR: somthing to list is required')
-					print('[town] options are buildings or people')	
+					print(ep + 'somthing to list is required')
+					print(op + 'options are buildings or people')	
 			elif inp[0] == 'desc':
 				if len(inp) > 1:
 					
@@ -302,8 +313,7 @@ class Town(Entity):
 							index = int(inp[1])-1
 							if -1 < index < len(self.ppl):
 								found = True
-						except:
-							print('[Debug] searching for name')
+						except:	
 							found = False
 							for i in range(0,len(self.ppl)):
 								if self.ppl[i] == inp[1]:
@@ -313,12 +323,12 @@ class Town(Entity):
 						if found:
 							print(self.ppl_desc[index])
 						else:
-							print('[town: ERROR] unable to find ' + str(index))
+							print(ep + 'unable to find ' + str(index))
 				else:
 					#we were not given any arguments, complain
-					print('[town: ERROR] person name or index required')
+					print(ep + 'person name or index required')
 			elif inp[0] == '?':
-				print('[town] printing help message')
+				print(op + 'printing help message')
 				print('\t"roll" <dice expresion>	roll the given dice expresion')
 				print('\t"list" <target>		list the given targets in the town')
 				print('\t"desc" <name,num>		describe the given persion via name or number')
