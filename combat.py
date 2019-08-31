@@ -93,6 +93,7 @@ def parse_command(command,var_dict,bieng_arr,caster):
 		target = getTarget(bieng_arr,command[3],caster)
 		if target == None:
 			#we were given an invalid target
+			print('[combat: ERROR] invalid name!')
 			return None
 
 		#actualy perform the modification of the stat
@@ -109,7 +110,7 @@ def parse_command(command,var_dict,bieng_arr,caster):
 			#we were given an invalid target
 			return None		
 		#perform the given operation on the target bieng
-		addStat(command[4],-1*num,target,bieng_arr)		
+		addStat(command[4],-1*num,target,bieng_arr)	
 	elif command[0] == 'Adv':
 		num = parse_num(command[1],var_dict)
 		if num == None:
@@ -117,7 +118,7 @@ def parse_command(command,var_dict,bieng_arr,caster):
 		target = getTarget(bieng_arr,command[3],caster)
 		if target == None:
 			return None
-		bieng_arr[target].addAdv(command[4],num)
+		bieng_arr[target].addAdv(command[4],num)	
 	elif command[0] == 'Dis':
 		num = parse_num(command[1],var_dict)
 		if num == None:
@@ -127,18 +128,27 @@ def parse_command(command,var_dict,bieng_arr,caster):
 			return None
 		bieng_arr[target].addAdv(command[4],-1*num)
 	elif command[0] == 'Set':
-		num = parse_num(command[3],var_dict)
-		if num == None:
-			#switch to the target parser
-			num = parse_target(command[3],bieng_arr,caster)
+		if 6 < len(command):
+			num = parse_num(command[3],var_dict)
+			calls = 0
 			if num == None:
-				#they did not give us a valid number or target, complain
-				print('[combat] ERROR: invalid target or number')
-			else:
-				print('[combat] setting ' + command[1] + ' to ' + num.name)
+				#switch to the target parser
+				num = parse_target(command[3],bieng_arr,caster)
+				if num == None:
+					#they did not give us a valid number or target, complain
+					print('[combat] ERROR: invalid target or number')
+					return False
+			
+			calls = parse_num(command[5],var_dict)
+			if calls == None:
+				print('[combat: ERROR] invalid number detected!')
+				return False	
+			print('[combat] setting ' + command[1] + ' to ' + str(num) + ' for ' + str(calls) + ' calls')	
+			var_dict[command[1]] = [num,calls]
+			return True
 		else:
-			print('[combat] setting ' + command[1] + ' to ' + str(num))
-		var_dict[command[1]] = [num,int(command[5])]
+			print('[combat: ERROR] invalid number of arguments!')
+			return False
 def checkname(bieng_arr,name):
 	for bieng in bieng_arr:
 		if bieng.name == name:
@@ -163,7 +173,13 @@ def combat_wrapper(bieng_arr,party,cultures):
 	while command[0] != 'q':	
 		if command[0] == 'roll':
 			#they want to roll a dice type
-			print('[combat] ' + str(parseDice(command[1])))
+			if len(command) > 1:
+				try:
+					print('[combat] ' + str(parseDice(command[1])))
+				except:
+					print('[combat: ERROR] invalid roll expresion!')
+			else:
+				print('[combat: ERROR] roll expresion required!')
 		elif command[0] == 'check':
 			if len(command) > 1:
 				check = False
@@ -179,7 +195,7 @@ def combat_wrapper(bieng_arr,party,cultures):
 					roll = bieng_arr[Turn].check(command[1:])
 					target = bieng_arr[Turn]
 			print('[combat] ' + target.name + ' rolled a ' + str(roll))
-		elif command[0] == 'ls':	
+		elif command[0] == 'list':	
 			for bieng in bieng_arr:
 				bieng.ToScreen(command)
 				print('-'*40)
@@ -199,19 +215,27 @@ def combat_wrapper(bieng_arr,party,cultures):
 						print('[combat: WARNING] defaulting to first Bieng!')
 						B_i = 0
 					target = bieng_arr[B_i]
-			if len(command) > i+1:
-				target.ToScreen(command[i+1:])
-			else:
-				target.ToScreen(['all'])
+				if len(command) > i+1:
+					target.ToScreen(command[i+1:])
+				else:
+					target.ToScreen(['all'])
 		elif command[0] == 'hit':
 			target = bieng_arr[Turn]
 			if len(command) > 1:
 				if command[1] != 'self':
-					target = bieng_arr[findBiengIndex(bieng_arr,command[1])]
-			if bieng_arr[Turn].rollHit(target):
-				print('[combat] ' + bieng_arr[Turn].name + ' hit ' + target.name + '!')
-			else:
-				print('[combat] ' + bieng_arr[Turn].name + ' missed')
+					#change the target if were not targeting ourself
+					index = findBiengIndex(bieng_arr,command[1])
+					if index == None:
+						print('[combat: ERROR] invalid entity name!')
+						target = None
+					else:
+						target = bieng_arr[index]
+			if target != None:
+				#only perform the following if we were given a valid target
+				if bieng_arr[Turn].rollHit(target):
+					print('[combat] ' + bieng_arr[Turn].name + ' hit ' + target.name + '!')
+				else:
+					print('[combat] ' + bieng_arr[Turn].name + ' missed')
 		elif command[0] == 'act':
 			bieng_arr[Turn].actions -= 1
 		elif command[0] == 'addAct':
@@ -236,9 +260,9 @@ def combat_wrapper(bieng_arr,party,cultures):
 				#so generate a silly one ourselfs
 				if len(cultures) == 0:
 					name = 'unamed'
-				else:
-					g = GramGen.generator('gen.xml')
-					name = cultures[randrange(0,len(cultures))].nameg.makeWord() + g.schema(', {sub noun || tag noun:verb_ns}er of {sub noun:noun}s')  
+				else:	
+					name = cultures[randrange(0,len(cultures))].nameg.makeWord()
+					
 			
 			#make sure that the name we want to use does not exist
 			#and if it does add a number after it
@@ -250,21 +274,36 @@ def combat_wrapper(bieng_arr,party,cultures):
 			e.name = testname
 			try:	
 				bieng_arr.append(e)
-				print('[combat] added level ' + str(e.lvl) + ' ' + e.name)
+				g = GramGen.generator('gen.xml')	
+				print('[combat] added level ' + str(e.lvl) + ' ' + e.name + g.schema(', {sub noun || tag noun:verb_ns}er of {sub noun:noun}s')  )
 			except:
 				print('[combat: ERROR] unkown error occured while adding the entity to the array')	
 		elif command[0] == 'removeEntity':
 			if len(command) > 1:
-				print(command[1])
-				print('[Debug] alive')
 				for i in range(0,len(bieng_arr)):
 					if bieng_arr[i].name == command[1]:
-						print('[combat] ' + bieng.name + ' dropped a spell fragment: ' + bieng_arr[i].loot())
+						print('[combat] ' + bieng_arr[i].name + ' dropped a spell fragment: ' + bieng_arr[i].loot())
 						del bieng_arr[i]
 						#make sure that turn does not point outside of the array
 						Turn = Turn % len(bieng_arr)
 						#exit the for loop
 						break
+		elif command[0] == '?':
+			print('[combat] printing help')
+			print('\t"roll" <dice expresion>		roll the dice of the given expresion')
+			print('\t"turn"					show whose turn it currently is')
+			print('\t"act"					use an action of the current turn')
+			print('\t"addact"				add an action to the current turn')
+			print('\t"list" [stats,all]			show the given stats of all entities in combat')
+			print('\t"show" <name> : [stats,all]		show the given stats')
+			print('\t"addEntity" [lvl [name]]		add an entity of the given level with the given name')
+			print('\t"hit" [entity name]			calculate hit on the entity of the given name')
+			print('\t"Adv" <num> to <entity name> <stat>	give num advantage to target stat')
+			print('\t"Dis" <num> to <entity name> <stat>	remove num advantage from target stat')
+			print('\t"Add" <num> to <entity name> <stat>	add num to the given entities stat')
+			print('\t"Sub" <num> from <entity name> <stat>	remove num from the given entities stat')
+			print('\t"q"					exit to the previous menu')
+			print('\t"?"					print this help menu')	
 		else:
 			parse_command(command,var_dict,bieng_arr,bieng_arr[Turn].name)
 		#this is where you would run the token system for the bieng that is currently on
@@ -275,7 +314,20 @@ def combat_wrapper(bieng_arr,party,cultures):
 			print('[command] ending the turn!')
 			print('-'*30)	
 			print('[command] it is currently ' + bieng_arr[Turn].name + '\'s turn')		
-		command = input('(combat)> ').split(' ')				
+		command = input('(combat)> ').split(' ')
+	
+	#clear out all of the changes made during combat to the adv array and set all of our charicters back to their defaults
+	for bieng in bieng_arr:
+		del_arr = []
+		for stat in bieng.adv:
+			if stat not in ['str','dex','con','int','wis','cha']:
+				#we cant delete them while we iterate, so store them to be deleted
+				del_arr.append(stat)	
+			else:
+				bieng.adv[stat] = 0
+		#delete the custom stats
+		for stat in del_arr:
+			del bieng.adv[stat]				
 def combat_filter(entity_arr,party,cultures):
 	#filter out anything that is not a bieng from getting passed to the function
 	bieng_arr = []

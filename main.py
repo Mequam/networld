@@ -12,6 +12,7 @@ import parse
 import combat
 from math import floor
 from uuid import getnode as get_mac
+from cdice import parse as parseDice
 
 #this is a wrapper function for the game menu that is actualy the main loop of the game
 #this function contains variables that can be used inside of the game loop
@@ -91,7 +92,15 @@ def game(partyname):
 		split_i = inputs.split(' ')
 		
 		#this is where we actualy runn the game
-		if split_i[0] == 'town':
+		if split_i[0] == 'roll':
+			if len(split_i) > 1:
+				try:
+					print('[networld] ' + str(parseDice(split_i[1])))
+				except:
+					print('[networld: ERROR] invalid dice expresion!')
+			else:
+				print('[networld: ERROR] dice expresion required')
+		elif split_i[0] == 'town':
 			if len(split_i) > 1:
 				found = False
 				for e in entity_arr:
@@ -103,7 +112,6 @@ def game(partyname):
 					print('[networld: ERROR] unrecognised town name')
 			else:
 				print('[networld: ERROR] town name required!')
-						
 			
 		elif split_i[0] in ['w','a','s','d']:	
 			#TODO:make a movement function that takes wasd as inputs and spits out
@@ -205,10 +213,16 @@ def game(partyname):
 				bieng_arr.append(player)
 			#send the party and the loaded bieng array to the combat menu
 			combat.combat_wrapper(bieng_arr,party,cultures)	
-		elif split_i[0] == 'tp':
-			party.x = int(split_i[1])
-			party.y = int(split_i[2])
-			print('[DEBUG] set the party x and y to the given cords')
+		elif split_i[0] == '?':
+			print('[networld] list of valid commands')
+			print('\t[w,a,s,d] 			move in the direction of the pointed letter')
+			print('\t"list" [target]		list the specified entity')
+			print('\t"combat"			enter the combat shell')
+			print('\t"town" [town]			enter the town of the given name (only works if there are towns in the node)')
+			print('\t"save"				save the progress of the grid and current party without closing the game')
+			print('\t"roll" <dice expresion>	roll a dice expresion')
+			print('\t"q"				exit to the previous menu')
+			print('\t"?"				print this list')
 		elif split_i[0] == 'save':
 			#save everything!!!
 			print('[networld] saving!')
@@ -229,7 +243,9 @@ def main(inputs):
 	if split_i[0].lower() == '?':
 		print('[main menu] list of commands')
 		print('\t"start" [party name]		start the game as the given party')
-		print('\t"party"   		        enter the the party management menu')
+		
+		#TODO: make this an actual thing
+		#print('\t"party"   		        enter the the party management menu')
 		print('\t"q"       			exit the game')
 		print('\t"new"				start a new party')
 	elif split_i[0] == 'new':

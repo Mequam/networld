@@ -8,6 +8,7 @@ import nameGen
 import combat
 from math import floor
 from statement import makeState
+from cdice import parse as parseDice
 def makeStat():
 	roll = 0
 	for i in range(0,3):
@@ -257,6 +258,16 @@ class Town(Entity):
 					bieng_arr.append(player)
 				
 				combat.combat_wrapper(bieng_arr,party,cultures)
+			elif inp[0] == 'roll':
+	
+				#TODO: ive used this command in three places now, it could REEEALY be turned into a function somewhere
+				if len(inp) > 1:
+					try:
+						print('[town] ' + str(parseDice(inp[1])))
+					except:
+						print('[town: ERROR] invalid dice expresion!')
+				else:
+					print('[town: ERROR] dice expresion required!')
 			elif inp[0] == 'list':
 				if len(inp) > 1:
 					#they gave us somthing to list
@@ -278,7 +289,7 @@ class Town(Entity):
 					#they did not tell us what they want to see, complain!
 					print('[town] ERROR: somthing to list is required')
 					print('[town] options are buildings or people')	
-			if inp[0] == 'desc':
+			elif inp[0] == 'desc':
 				if len(inp) > 1:
 					
 					#they gave us arguments
@@ -302,10 +313,18 @@ class Town(Entity):
 						if found:
 							print(self.ppl_desc[index])
 						else:
-							print('[town] ERROR: unable to find ' + str(index))
+							print('[town: ERROR] unable to find ' + str(index))
 				else:
 					#we were not given any arguments, complain
-					print('[town] ERROR: person name or index required')
+					print('[town: ERROR] person name or index required')
+			elif inp[0] == '?':
+				print('[town] printing help message')
+				print('\t"roll" <dice expresion>	roll the given dice expresion')
+				print('\t"list" <target>		list the given targets in the town')
+				print('\t"desc" <name,num>		describe the given persion via name or number')
+				print('\t"combat"			enter the combat menu')
+				print('\t"q"				exit to the previous menu')
+				print('\t"?"				print this help page')
 			else:
 				pass
 			
@@ -341,12 +360,12 @@ class Bieng(Entity):
 			return False	
 	def check(self,given_stats,dieType=20):
 		mod = 0
-		for stat in self.stats:
-			if stat in given_stats:
+		for stat in given_stats:
+			if stat in self.stats:
 				mod += floor((self.stats[stat] - 10)/2)
 		adv = 0
-		for stat in self.stats:
-			if stat in given_stats:
+		for stat in given_stats:
+			if stat in self.adv:
 				adv += self.adv[stat]
 		#now return a disadvantaged/advantaged roll
 		return roll(20,adv)+mod
@@ -370,10 +389,13 @@ class Bieng(Entity):
 		if 'adv' in command or 'all' in command:
 			print(self.adv)
 	def addAdv(self,stat,num):
+		#print our changes to the screen in both cases
 		if stat not in self.adv:
 			self.adv[stat] = num
+			print('[*] set ' + self.name + ' ' + stat + ' to ' + str(self.adv[stat]))	
 			return False
 		self.adv[stat] += num
+		print('[*] set ' + self.name + ' advantaged ' + stat + ' to ' + str(self.adv[stat]))
 		return True
 
 	#this function is used to roll a stat with the advantages of two different stats
