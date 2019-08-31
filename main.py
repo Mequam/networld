@@ -36,7 +36,6 @@ def updateArrs(grid_arr,entity_arr,player):
 def game(partyname):	
 	#the grid array represents any entity not on the same node as the players
 	#load the grid and the partyname
-	grid_arr = parse.loadArr('saves/grid.pkl')
 	cultures = parse.loadArr('saves/cultures.pkl')
 	if not cultures:
 		random.seed(get_mac())
@@ -45,8 +44,17 @@ def game(partyname):
 		for i in range(2,5):
 			cultures.append(Entity.Culture())
 		#this array should only be written to once, so we dont save it later in generation
-		parse.saveArr(cultures,'saves/cultures.pkl')	
-	if not grid_arr:
+		parse.saveArr(cultures,'saves/cultures.pkl')
+	
+	grid_arr = parse.loadArr('saves/grid.pkl')
+	if grid_arr:
+		#load how many of each entity exists from the array into their shared variables
+		for entity in grid_arr:
+			if type(entity) == Entity.Town:
+				Entity.Town.count += 1
+			elif type(entity) == Entity.Settler:
+				Entity.Settler.count += 1
+	else:
 		#we need to make cultures and then populate the world with cities
 		print('[*] GENERATING THE GRID *^*')	
 		grid_arr = []
@@ -55,8 +63,6 @@ def game(partyname):
 		random.seed(get_mac())
 		for culture in cultures:
 			grid_arr.append(Entity.Town(culture,random.randrange(1,21),random.randrange(1,21)))
-		#for town in grid_arr:
-		#	print('[*] Town at ' + str(town.x) + ' ' + str(town.y))
 	
 	#the entity array represents entities in the same cords as the players
 	entity_arr = parse.loadArr('saves/entity.pkl')
@@ -75,7 +81,7 @@ def game(partyname):
 	node = make_node.node(party.x,party.y)
 
 	inputs = 'blah'
-	while inputs != 'q':
+	while inputs != 'q':	
 		inputs = input('(networld)> ')
 		if inputs == 'l':
 			inputs = last
@@ -85,28 +91,18 @@ def game(partyname):
 		split_i = inputs.split(' ')
 		
 		#this is where we actualy runn the game
-		if split_i[0] == 'list' and len(split_i) > 1:
-			if split_i[1] == 'members':
-				print('[networld] listing party members')
-				for player in party.players:
-					print(player.name)
-			if split_i[1] == 'towns':
-				print('[networld] listing towns in your node')	
-				for e in entity_arr:	
-					if type(e) is Entity.Town:
-						print(e.name + ', a ' + e.culture.name + ' town')
-		elif split_i[0] == 'town':
+		if split_i[0] == 'town':
 			if len(split_i) > 1:
 				found = False
 				for e in entity_arr:
 					if type(e) == Entity.Town and e.name == split_i[1]:
-						e.shell(entity_arr,party)
+						e.shell(entity_arr,party,cultures)
 						found = True
 						break
 				if not found:
-					print('[networld] ERROR: unrecognised town name')
+					print('[networld: ERROR] unrecognised town name')
 			else:
-				print('[networld] ERROR: town name required!')
+				print('[networld: ERROR] town name required!')
 						
 			
 		elif split_i[0] in ['w','a','s','d']:	
@@ -138,6 +134,7 @@ def game(partyname):
 				node = make_node.node(party.x,party.y)
 				print('[networld] leaving node!')
 				print('[*] ' + node.desc())
+				
 				#set the parties sub x and y to the middle of that node
 				party.suby = floor(node.size[1]/2)
 				party.subx = floor(node.size[0]/2)
@@ -145,17 +142,17 @@ def game(partyname):
 				#update the entity arrays to load all of the entities from the grid array that match the players current poss
 				#are loaded correctly
 				updateArrs(grid_arr,entity_arr,party)
-
+				
 				#update entitiys in the grids node only if the players leave their current node
 				i = 0
 				while i < len(grid_arr):
 					spawn = grid_arr[i].AI(party)
-					#if spawn == -1:
-					#	del grid_arr[i]
+					if spawn == -1:
+						del grid_arr[i]
 						#avoid incrimenting i when we delete an entity so that way we dont go over the desired index
-					#	continue
-					#elif spawn != None:
-					#	grid_arr.append(spawn)
+						continue
+					elif spawn != None:
+						grid_arr.append(spawn)
 					i += 1
 			else:
 				#we didnt leave the node that we are in, there is a chance that we will spawn an encounter
@@ -165,30 +162,38 @@ def game(partyname):
 				else:
 					print('[*] you move onwards unobscured')
 			#update entities in the players node no matter what	
-			for i in range(0,len(entity_arr)):
+			
+			i = 0
+			while i < len(entity_arr):	
 				spawn = entity_arr[i].AI(party)
 				if spawn == -1:
 					del entity_arr[i]
+					#dont incriment i as we just removed an entity from the array
+					continue
 				elif spawn != None:
 					entity_arr.append(spawn)
-		elif split_i[0] == 'show' and len(split_i) > 1:
-			if split_i[1] == 'all':
-				print(node.toString())
-			elif split_i[1] == 'plants':
-				print(node.strPlants())
-			elif split_i[1] == 'animals':
-				print(node.strAnimals())
-			elif split_i[1] == 'biome':
-				print(node.biome)
-		elif split_i[0] == 'tp' and len(split_i) > 2:
-			#this command is for development ONLY
-			try:
-				party.x = int(split_i[1])
-				party.y = int(split_i[2])
-				node = make_node.node(party.x,party.y)
-				print(node.desc())
-			except:
-				return False
+				i += 1
+		elif split_i[0] == 'list':
+			if len(split_i) > 1:
+				if split_i[1] == 'node':
+					print(node.toString())
+				elif split_i[1] == 'plants':
+					print(node.strPlants())
+				elif split_i[1] == 'animals':
+					print(node.strAnimals())
+				elif split_i[1] == 'biome':
+					print(node.biome)
+				if split_i[1] == 'members':
+					print('[networld] listing party members')
+					for player in party.players:
+						print(player.name)
+				if split_i[1] == 'towns':
+					print('[networld] listing towns in your node')	
+					for e in entity_arr:	
+						if type(e) is Entity.Town:
+							print(e.name + ', a ' + e.culture.name + ' town')	
+			else:
+				print('[networld: ERROR] valid options are: node, plants, animals,biome,members and towns')
 		elif split_i[0] == 'combat':
 			#load all of the entites that are on the parties current grid and are biengs
 			#into the bieng arr, as well as all of the players
@@ -200,6 +205,10 @@ def game(partyname):
 				bieng_arr.append(player)
 			#send the party and the loaded bieng array to the combat menu
 			combat.combat_wrapper(bieng_arr,party,cultures)	
+		elif split_i[0] == 'tp':
+			party.x = int(split_i[1])
+			party.y = int(split_i[2])
+			print('[DEBUG] set the party x and y to the given cords')
 		elif split_i[0] == 'save':
 			#save everything!!!
 			print('[networld] saving!')

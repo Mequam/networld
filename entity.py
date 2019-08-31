@@ -146,23 +146,34 @@ class Entity:
 		return True
 class Settler(Entity):
 	#this is a type of AI that will explore around the grid and try and settle down to create a new city
+	count = 0
 	def __init__(self,culture,x=None,y=None):
 		Entity.__init__(self,x,y)
 		self.culture = culture
 		self.name = culture.nameg.makeWord()
+		Settler.count += 1
 	def AI(self,party):
 		#the settler has no idea where home is, so it wanders aimlessly seaching
 		#for a place to place a new spawner
-		pass
-		self.move(random.randrange(-1,2),random.randrange(-1,2))
-		if random.randrange(1,100) < make_node.node(self.x,self.y).hostil:	
+		
+		#pick a random valid direction to move
+		x = random.randrange(-1,2)
+		y = random.randrange(-1,2)	
+		self.move(x,y)
+
+		#only spawn a new town if there are less than 20 towns
+		if random.randrange(1,100) < make_node.node(self.x,self.y).hostil and Town.count < 10:	
 			return Town(self.culture,self.x,self.y)
 		else:
-			if random.randrange(1,101) < 50:	
+			#delete ourselfs if we fail our survival check
+			if random.randrange(1,101) < 50:
+				#remove a count for the settler
+				self.count -= 1	
 				return -1
 class Town(Entity):
 	#each town needs to have a description and a culture
 	#what would the culture look like?`
+	count = 0
 	def __init__(self,culture,x=None,y=None,name=None):
 		#steal the entity init for x and y
 		Entity.__init__(self,x,y)
@@ -219,21 +230,25 @@ class Town(Entity):
 		self.g.addWordList('TownView','town_desc','TownView',['{tag prep:prep} you you {tag sense_far:verb} a {tag TownDesc:town_desc}'])
 		#set the description for the town
 		self.desc = self.g.schema('{tag TownView:town_desc}')
+		
+		#incriment the total of all of the towns, that way the game knows when to STOP spawning towns
+		Town.count += 1
 	def AI(self,party):
 		#have a random chance of spawning a settler based on the hostlity of the node the town finds itself in	
-		pass
-		if random.randrange(1,101) < make_node.node(self.x,self.y).hostil:	
-			return Settler(self.culture,self.x+random.randrange(1,20))
+
+		#there should never be very many settlers on the board at once
+		if random.randrange(1,101) < make_node.node(self.x,self.y).hostil and Settler.count < 5:	
+			return Settler(self.culture,self.x,self.y)
 		if party.x == self.x and party.y == self.y:
 			#the party found our town!, tell them whats up
 			#this generation could probably use some more work, but for now its ok
 			print('[*] ' + self.desc)
-	def shell(self,local_arr,party):	
+	def shell(self,local_arr,party,cultures):
+		#this is a menu used to interact with a given town	
 		inp = ['a']
 		while inp[0] != 'q':
 			inp = input('(town)> ').split(' ')
-			if inp[0] == 'combat':
-				#TODO: figure out a better way to impliment this in the combat file
+			if inp[0] == 'combat':	
 				bieng_arr = []
 				for thing in local_arr:
 					if type(thing) is Bieng:
@@ -241,7 +256,7 @@ class Town(Entity):
 				for player in party.players:
 					bieng_arr.append(player)
 				
-				combat.combat_wrapper(bieng_arr,party)
+				combat.combat_wrapper(bieng_arr,party,cultures)
 			elif inp[0] == 'list':
 				if len(inp) > 1:
 					#they gave us somthing to list
