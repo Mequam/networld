@@ -106,6 +106,16 @@ def game(partyname):
 					print('[networld: ERROR] invalid dice expresion!')
 			else:
 				print('[networld: ERROR] dice expresion required')
+		elif split_i[0] == 'check':
+			if len(split_i) > 2:
+				for player in party.players:
+					if player.name == split_i[1]:
+						print('[*] ' + player.name + ' rolled a ' + str(player.check(split_i[2])))
+						break
+				else:
+					print('[networld: ERROR] player not found!')
+			else:
+				print('[networld: ERROR] player and stat to check required!')
 		elif split_i[0] == 'town':
 			if len(split_i) > 1:
 				found = False
@@ -222,11 +232,12 @@ def game(partyname):
 		elif split_i[0] == '?':
 			print('[networld] list of valid commands')
 			print('\t[w,a,s,d] 			move in the direction of the pointed letter')
-			print('\t"list" [target]		list the specified entity')
+			print('\t"list" [target]			list the specified entity')
+			print('\t"check" <member> <stat>		run a check against the stat of the current member')
 			print('\t"combat"			enter the combat shell')
 			print('\t"town" [town]			enter the town of the given name (only works if there are towns in the node)')
 			print('\t"save"				save the progress of the grid and current party without closing the game')
-			print('\t"roll" <dice expresion>	roll a dice expresion')
+			print('\t"roll" <dice expresion>		roll a dice expresion')
 			print('\t"q"				exit to the previous menu')
 			print('\t"?"				print this list')
 		elif split_i[0] == 'save':

@@ -318,16 +318,7 @@ def combat_wrapper(bieng_arr,party,cultures):
 	
 	#clear out all of the changes made during combat to the adv array and set all of our charicters back to their defaults
 	for bieng in bieng_arr:
-		del_arr = []
-		for stat in bieng.adv:
-			if stat not in ['str','dex','con','int','wis','cha']:
-				#we cant delete them while we iterate, so store them to be deleted
-				del_arr.append(stat)	
-			else:
-				bieng.adv[stat] = 0
-		#delete the custom stats
-		for stat in del_arr:
-			del bieng.adv[stat]				
+		bieng.reset()
 def combat_filter(entity_arr,party,cultures):
 	#filter out anything that is not a bieng from getting passed to the function
 	bieng_arr = []

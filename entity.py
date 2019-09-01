@@ -347,6 +347,7 @@ class Bieng(Entity):
 
 		if lvl <= 1:
 			lvl = 2
+		#TODO: need a better system for incorperating the level into the stat
 		stre = makeStat() + random.randrange(1,lvl)
 		dex = makeStat() + random.randrange(1,lvl)
 		con = makeStat() + random.randrange(1,lvl)
@@ -354,15 +355,52 @@ class Bieng(Entity):
 		wis = makeStat() + random.randrange(1,lvl)
 		cha = makeStat() + random.randrange(1,lvl)	
 		
-		self.stats = {'str':stre,'dex':dex,'con':con,'int':inte,'wis':wis,'cha':cha}
-		
+		#NOTE:the following two dictionarys should ALMOST never be changed, and if they are changed they should have a way to be changed back
+		#a dictionary array where we store stats for use later
+		#NOTE: theres nothing special about the stats in this dictionary, literaly any valid str num pair will be recognised and treated as a stat
+		self.permstats = {'str':stre,'dex':dex,'con':con,'int':inte,'wis':wis,'cha':cha}
+
+		#this dict contains the perminent advantages that are used in the dice rolls of the player
+		#positive numbers mean their taking the highest result from that many dice, neg mean the lowest	
+		self.permadv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}	
+
+		#these are the actual dictionaries that most of our functions use for our stats, they can be changed
+		self.stats = {}
+		self.adv = {}	
+	
+		#this function copies the perminent dicts into the temp dicts		
+		self.reset()
+	
+		#I almost think its worth it to turn each of these into stats in the stat array, perhaps a future project?
 		self.hp = random.randrange(10,lvl*100)
 		self.ac = random.randrange(18-lvl,20)-10
 		self.thaco = 20 - lvl
 		self.name = 'NA'
 		self.lvl = lvl
+		
+	def reset(self):
+		del_list = []
+		#copy over all of the values from permadv
+		for k in self.permadv:
+			self.adv[k] = self.permadv[k]
+
+		#check for any values in the advantage array that are not in the perm array and delete them
+		for k in self.adv:
+			if k not in self.permadv:
+				del_list.append(k)
+		for k in del_list:
+			del self.adv[k]
+	
+		del_list = []
+		for k in self.permstats:
+			self.stats[k] = self.permstats[k]
+		for k in self.stats:
+			if k not in self.permstats:
+				del_list.append(k)
+		for k in del_list:
+			del self.stats[k]
+				
 			
-		self.adv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}
 	def rollHit(self,target):
 		if self.check(['hit','attack','str']) >= self.thaco - target.ac:
 			return True
@@ -410,10 +448,15 @@ class Bieng(Entity):
 
 	#this function is used to roll a stat with the advantages of two different stats
 	#it is ment to be a wrapper function ONLY and should not be called outside of the object
-	def statStr(self):
+	def statStr(self,perm=False):
 		ret_val = ''
-		for stat in self.stats:
-			ret_val += stat + ':' + str(self.stats[stat]) + '\n'
+		
+		if perm:
+			target_dict = self.permstats
+		else:
+			target_dict = self.stats
+		for stat in target_dict:
+			ret_val += stat + ':' + str(target_dict[stat]) + '\n'
 		return ret_val
 	
 class Player(Bieng):
@@ -424,8 +467,8 @@ class Player(Bieng):
 		else:
 			self.name = name 	
 		
-		self.stats = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}		
-		self.adv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}	
+		self.permstats = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}		
+		self.permadv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}	
 	def load(self,fname=None):
 		if fname==None:
 			fname = 'players/' + self.name + '.pkl'
@@ -449,90 +492,126 @@ class Player(Bieng):
 		Bieng.__init__(self,0,0,2)	
 	def prompt(self):
 		#get the players name before we do anything else
-		print('[new_player] what would you like your name to be?')	
+		print('[new player] what would you like your name to be?')	
 		self.name = input('(name)> ')
-		print('[new_player] are you sure that you want ' + self.name + ' to be your name?')
+		print('[new player] are you sure that you want ' + self.name + ' to be your name?')
 		ansr = input('(y/n)> ')
 
 		while ansr != 'y':
 			self.name = input('(name)> ')
-			print('[new_player] are you sure that you want ' + self.name + ' to be your name?')
+			print('[new player] are you sure that you want ' + self.name + ' to be your name?')
 			ansr = input('(y/n)> ')
-		print('[new_player] set name to ' + self.name)
+		print('[new player] set name to ' + self.name)
 		print('-'*20+'\n')	
 	
 		#initilise the rolls of the new player
 		rolls = []
 		for i in range(0,6):
 			rolls.append(makeStat())
-		print('[new_player] type the stat you want to set folloewd by the index number of your roll')
-		print('[new_player] type q to finish and create the new charicter')	
-		print(rolls)	
+		print('[new player] type the stat you want to set followed by the index number of your roll')
+		print('[new player] type rolls to see the remaining rolls that you have')
+		print('[new player] type q to finish and create the new charicter\n')	
+
+		#this is a function for formating the output of rolls to the screen used in the menu function bellow
+		def print_rolls(rolls):
+			print('rolls\n----')
+			for i in range(0,len(rolls)):
+				print(str(i+1) + ':' + str(rolls[i]))	
+
+		print_rolls(rolls)
 		
-		@Menu.menu('new_player')
-		def menu(string):	
+		@Menu.menu('new player')
+		def menu(string):
 			split_s = string.split(' ')
 
-
-			if split_s[0] == 's':
-	 			print(self.statStr())
+			if split_s[0] == 'stats':
+				#the players want to see the stats that they have currently set
+				#tell the statStr function to print out the PERMINENT stats of the player
+				#as those are the ones that we are currently setting
+	 			print(self.statStr(True))
+			elif split_s[0] == 'rolls':
+				print_rolls(rolls)
+			elif split_s[0] == 'unset':
+				if len(split_s) > 1:
+					if split_s[1] in self.permstats:
+						if self.permstats[split_s[1]] != 0:
+							rolls.append(self.permstats[split_s[1]])
+							self.permstats[split_s[1]] = 0
+							print('[new player] unset ' + split_s[1])
+						else:
+							print('[new player: ERROR] cannot unset an unset stat!')
+					else:
+						print('[new player: ERROR] invalid stat!')
+				else:
+					print('[new player: ERROR] stat required')		
+			elif split_s[0] == '?':
+				print('[new player] printing help')
+				print('\t"rolls"		list remaining rolls')
+				print('\t"stats"		list the stats of the charicter')
+				print('\t<stat> <1-9>		set the stat to the given index NOTE:valid indexes are listed with the stats command')
+				print('\t"unset" <stat>		unsets the given stat to free up a roll')
+				print('\t"?"			print this help page')
+				print('\t"q" 			leave this menu')
 			#they have given us a command to set one of the stats
-			if split_s[0] == 'str' or split_s[0] == 'dex' or split_s[0] == 'con' or split_s[0] == 'int' or split_s[0] == 'wis' or split_s[0] == 'cha':
+			elif split_s[0] == 'str' or split_s[0] == 'dex' or split_s[0] == 'con' or split_s[0] == 'int' or split_s[0] == 'wis' or split_s[0] == 'cha':
 				if len(split_s) < 2:
-					print('[new_player] index required!')	
+					print('[new player: ERROR] index required!')	
 					return False
 				else:
 					try:
 						x = int(split_s[1])
 					except:
-						print('[new_player] index not a number!')
+						print('[new player] index not a number!')
 						return False
 					if x >= len(rolls)+1 or 0 >= x:
-						print('[new_player] invalid index!')
+						print('[new player] invalid index!')
 					else:
 						#we have been given a valid stat, use it to set the target stat	
 						index = int(split_s[1]) - 1
 						roll = rolls[index]
 						print('setting ' + split_s[0] + ' to ' + str(roll))	
 						if split_s[0] == 'str':
-							if self.stats['str'] != 0:
+							if self.permstats['str'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.str)
-							self.stats['str'] = roll
+								rolls.append(self.permstats['str'])
+							self.permstats['str'] = roll
 						elif split_s[0] == 'dex':
-							if self.stats['dex'] != 0:
+							if self.permstats['dex'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.stats['dex'])
-							self.stats['dex'] = roll
+								rolls.append(self.permstats['dex'])
+							self.permstats['dex'] = roll
 						elif split_s[0] == 'con':
-							if self.stats['con'] != 0:
+							if self.permstats['con'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.stats['con'])
-							self.stats['con'] = roll
+								rolls.append(self.permstats['con'])
+							self.permstats['con'] = roll
 						elif split_s[0] == 'int':
-							if self.stats['int'] != 0:
+							if self.permstats['int'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.stats['int'])
-							self.stats['int'] = roll
+								rolls.append(self.permstats['int'])
+							self.permstats['int'] = roll
 						elif split_s[0] == 'wis':
-							if self.stats['wis'] != 0:
+							if self.permstats['wis'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.stats['wis'])
-							self.stats['wis'] = roll
+								rolls.append(self.permstats['wis'])
+							self.permstats['wis'] = roll
 						elif split_s[0] == 'cha':
-							if self.stats['cha'] != 0:
+							if self.permstats['cha'] != 0:
 								#append the old stat to the rolls array so that the user can access it again if they want to
-								rolls.append(self.stats['cha'])
-							self.stats['cha'] = roll
+								rolls.append(self.permstats['cha'])
+							self.permstats['cha'] = roll
 						else:
-							print('[new_player] this should never happen, godspeed user')
+							print('[new player] this should never happen, godspeed user')
 						del rolls[index]
-						print(rolls)
+
+						print_rolls(rolls)
+							
 			return True
 		menu()
 		while len(rolls) != 0:
-			print('[new_player] ERROR! not all stats have been set')
+			print('[new player] ERROR! not all stats have been set')
 			menu()
+		self.reset()
 class Party(Entity):
 	def __init__(self,name=None,players=None):
 		self.x = 1
@@ -562,7 +641,7 @@ class Party(Entity):
 			inp = parse.selectPrompt('[new party] are you sure thats what you want the parties name to be?(y/n)> \n(y/n)',['y','n'])
 		
 		print('[new party] set party name to ' + self.name)
-		print('\n[new party] now we add players to the party!')
+		print('\n[new party] now we add players to the party!\n')
 		while True:
 			charic = Player()
 			charic.prompt()
@@ -603,4 +682,4 @@ if __name__ == '__main__':
 	a = Bieng(1,1,1)
 	b = Bieng(1,1,1)
 	p = Party()
-	t.shell([a,b],p)
+	t.shell([a,b],p,[c])
