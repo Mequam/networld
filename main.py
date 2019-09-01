@@ -245,7 +245,7 @@ def game(partyname):
 			print('\t"town" [town]			enter the town of the given name (only works if there are towns in the node)')
 			print('\t"save"				save the progress of the grid and current party without closing the game')
 			print('\t"roll" <dice expresion>		roll a dice expresion')
-			print('\t"q"				exit to the previous menu')
+			print('\t"q"				exit to the previous menu')	
 			print('\t"?"				print this list')
 		elif split_i[0] == 'save':
 			#save everything!!!
@@ -267,16 +267,18 @@ def main(inputs):
 	if split_i[0].lower() == '?':
 		print('[main menu] list of commands')
 		print('\t"start" [party name]		start the game as the given party')
-		
+		print('\t"new"				start a new party')	
+		print('\tv				print the games version')
 		#TODO: make this an actual thing
 		#print('\t"party"   		        enter the the party management menu')
-		print('\t"q"       			exit the game')
-		print('\t"new"				start a new party')
+		print('\t"q"       			exit the game')	
 	elif split_i[0] == 'new':
 		i = parse.selectPrompt('[main menu] are you sure that you would like to start a new party?\n(y/n)> ',['y','n'])
 		if i == 'y':
 			p = Entity.Party()
 			p.prompt()
+	elif split_i[0] == 'v':
+		print('2.0')
 	elif split_i[0] == 'party':
 		#need to work on this input
 		party()
