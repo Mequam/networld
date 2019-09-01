@@ -268,7 +268,7 @@ def main(inputs):
 		print('[main menu] list of commands')
 		print('\t"start" [party name]		start the game as the given party')
 		print('\t"new"				start a new party')	
-		print('\tv				print the games version')
+		print('\t"v"				print the games version')
 		#TODO: make this an actual thing
 		#print('\t"party"   		        enter the the party management menu')
 		print('\t"q"       			exit the game')	
