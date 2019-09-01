@@ -16,10 +16,10 @@ from cdice import parse as parseDice
 
 #this is a wrapper function for the game menu that is actualy the main loop of the game
 #this function contains variables that can be used inside of the game loop
-def updateArrs(grid_arr,entity_arr,player):
+def updateArr(grid_arr,entity_arr,player):	
 	appended = 0
-	i = 0
-	while i < len(entity_arr):
+	i = 0		
+	while i < len(entity_arr):	
 		if entity_arr[i].x != player.x or entity_arr[i].y != player.y:
 			#somthing in the entity array is not on the same grid as the players, move it to the other array
 			grid_arr.append(entity_arr[i])
@@ -27,8 +27,11 @@ def updateArrs(grid_arr,entity_arr,player):
 			appended += 1
 		else:
 			#only incriment i if we do NOT want to remove an entity from the current node
-			i += 1
-	
+			i += 1	
+	if len(grid_arr)-appended <= 0:
+		#theres nothing to update in the grid_array, we can skip out on a for loop!
+		#actualy we have to or the while loop after this check would go on forever
+		return True	
 	#theres no need to check the entities we already appended	
 	i = 0
 	while i < len(grid_arr)-appended:	
@@ -38,8 +41,12 @@ def updateArrs(grid_arr,entity_arr,player):
 			#remove the entity from the grid array after placing it into the entity array
 			del grid_arr[i]
 		else:
-			i += 1
+			i += 1	
 	return True
+def masterUpdateArrs(player):	
+	updateArr(Entity.Town.ga,Entity.Town.ea,player)	
+	updateArr(Entity.Bieng.ga,Entity.Bieng.ea,player)
+
 def game(partyname):	
 	#the grid array represents any entity not on the same node as the players
 	#load the grid and the partyname
@@ -53,14 +60,18 @@ def game(partyname):
 		#this array should only be written to once, so we dont save it later in generation
 		parse.saveArr(cultures,'saves/cultures.pkl')
 	
+	#grid_array will now represent an array of arrays, each of those arrays representing a different type of entity
 	grid_arr = parse.loadArr('saves/grid.pkl')
 	if grid_arr:
 		#load how many of each entity exists from the array into their shared variables
-		for entity in grid_arr:
-			if type(entity) == Entity.Town:
-				Entity.Town.count += 1
-			elif type(entity) == Entity.Settler:
-				Entity.Settler.count += 1
+		for arr in grid_arr:
+			if len(arr) > 0:
+				if type(arr[0]) == Entity.Town:
+					Entity.Town.ga = arr
+					Entity.Town.count = len(arr)
+				elif type(arr[0]) == Entity.Bieng:
+					Entity.Bieng.ga = arr 
+				
 	else:
 		#we need to make cultures and then populate the world with cities
 		print('[*] GENERATING THE GRID *^*')	
@@ -69,13 +80,25 @@ def game(partyname):
 
 		random.seed(get_mac())
 		for culture in cultures:
-			grid_arr.append(Entity.Town(culture,random.randrange(1,21),random.randrange(1,21)))
+			Entity.Town(culture,random.randrange(1,21),random.randrange(1,21))
+		
+		#load the individual entity type grid arrays into the main grid array
+		grid_arr.append(Entity.Town.ga)
+		grid_arr.append(Entity.Bieng.ga)
 	
 	#the entity array represents entities in the same cords as the players
 	entity_arr = parse.loadArr('saves/entity.pkl')
 	if not entity_arr:
 		print('[*] no entities found, eh')
-		entity_arr = []
+		entity_arr = [Entity.Town.ea,Entity.Bieng.ea]
+	else:
+		for arr in entity_arr:
+			if len(arr) > 0:
+				if type(arr[0]) == Entity.Town:
+					Entity.Town.ea = arr
+					Entity.Town.count += len(arr)
+				elif type(arr[0]) == Entity.Bieng:
+					Entity.Bieng.ea = arr
 
 	party = Entity.Party() 
 	party.load('saves/parties/'+partyname + '.pkl')
@@ -119,8 +142,8 @@ def game(partyname):
 		elif split_i[0] == 'town':
 			if len(split_i) > 1:
 				found = False
-				for e in entity_arr:
-					if type(e) == Entity.Town and e.name == split_i[1]:
+				for e in Entity.Town.ea:
+					if e.name == split_i[1]:
 						e.shell(entity_arr,party,cultures)
 						found = True
 						break
@@ -163,21 +186,18 @@ def game(partyname):
 				party.suby = floor(node.size[1]/2)
 				party.subx = floor(node.size[0]/2)
 				
-				#update the entity arrays to load all of the entities from the grid array that match the players current poss
-				#are loaded correctly
-				updateArrs(grid_arr,entity_arr,party)
+				#update the arrays containing entities
+				masterUpdateArrs(party)
 				
-				#update entitiys in the grids node only if the players leave their current node
-				i = 0
-				while i < len(grid_arr):
-					spawn = grid_arr[i].AI(party)
-					if spawn == -1:
-						del grid_arr[i]
-						#avoid incrimenting i when we delete an entity so that way we dont go over the desired index
-						continue
-					elif spawn != None:
-						grid_arr.append(spawn)
-					i += 1
+				#update entities in the grids node only if the players leave their current node
+				for arr in grid_arr:
+					i = 0
+					while i < len(arr):
+						if arr[i].AI(party) == -1:
+							del arr[i]
+							#avoid incrimenting i when we delete an entity so that way we dont go over the desired index
+							continue
+						i += 1
 			else:
 				#we didnt leave the node that we are in, there is a chance that we will spawn an encounter
 				#roll for that chance
@@ -186,17 +206,14 @@ def game(partyname):
 				else:
 					print('[*] you move onwards unobscured')
 			#update entities in the players node no matter what	
-			
-			i = 0
-			while i < len(entity_arr):	
-				spawn = entity_arr[i].AI(party)
-				if spawn == -1:
-					del entity_arr[i]
-					#dont incriment i as we just removed an entity from the array
-					continue
-				elif spawn != None:
-					entity_arr.append(spawn)
-				i += 1
+			for arr in entity_arr:
+				i = 0
+				while i < len(arr):	
+					if arr[i].AI(party) == -1:
+						del arr[i]
+						#dont incriment i as we just removed an entity from the array
+						continue
+					i += 1
 		elif split_i[0] == 'list':
 			if len(split_i) > 1:
 				if split_i[1] == 'node':
@@ -213,22 +230,12 @@ def game(partyname):
 						print(player.name)
 				if split_i[1] == 'towns':
 					print('[networld] listing towns in your node')	
-					for e in entity_arr:	
-						if type(e) is Entity.Town:
-							print(e.name + ', a ' + e.culture.name + ' town')	
+					for town in Entity.Town.ea:	
+						print(town.name + ', a ' + town.culture.name + ' town')	
 			else:
 				print('[networld: ERROR] valid options are: node, plants, animals,biome,members and towns')
 		elif split_i[0] == 'combat':
-			#load all of the entites that are on the parties current grid and are biengs
-			#into the bieng arr, as well as all of the players
-			bieng_arr = []
-			for entity in entity_arr:
-				if type(entity) is Entity.Bieng:
-					bieng_arr.append(Bieng)
-			for player in party.players:	
-				bieng_arr.append(player)
-			#send the party and the loaded bieng array to the combat menu
-			combat.combat_wrapper(bieng_arr,party,cultures)	
+			combat.combat_wrapper(Entity.Bieng.ea+party.players,party,cultures)	
 		elif split_i[0] == '?':
 			print('[networld] list of valid commands')
 			print('\t[w,a,s,d] 			move in the direction of the pointed letter')
@@ -247,7 +254,7 @@ def game(partyname):
 			if not parse.saveArr(entity_arr,'saves/entity.pkl'):
 				print('[networld: ERROR] could not save the entity array!')
 			if not parse.saveArr(grid_arr,'saves/grid.pkl'):
-				print('[networld: ERROR] could not save the grid array!')	
+				print('[networld: ERROR] could not save the grid array!')
 	print('[networld] saving and exiting to the main menu!')
 	party.save()
 	parse.saveArr(entity_arr,'saves/entity.pkl')

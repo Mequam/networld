@@ -129,7 +129,7 @@ class Entity:
 			return True
 		return False
 	def AI(self,party):
-		print('[*] running AI for ' + str(self))
+		pass
 	def load(self,fname):
 		try:
 			f = open(fname,'rb')
@@ -145,39 +145,177 @@ class Entity:
 		pickle.dump(self.__dict__,f,pickle.HIGHEST_PROTOCOL)
 		f.close()
 		return True
-class Settler(Entity):
+
+class Bieng(Entity):
+	#this class represents anything that the players can through damage at
+	ga = []
+	ea = []
+	def __init__(self,x,y,lvl):
+		self.actions = 2
+		self.x = x
+		self.y = y
+
+		if lvl <= 1:
+			lvl = 2
+		#TODO: need a better system for incorperating the level into the stat
+		stre = makeStat() + random.randrange(1,lvl)
+		dex = makeStat() + random.randrange(1,lvl)
+		con = makeStat() + random.randrange(1,lvl)
+		inte = makeStat() + random.randrange(1,lvl)
+		wis = makeStat() + random.randrange(1,lvl)
+		cha = makeStat() + random.randrange(1,lvl)	
+		
+		#NOTE:the following two dictionarys should ALMOST never be changed, and if they are changed they should have a way to be changed back
+		#a dictionary array where we store stats for use later
+		#NOTE: theres nothing special about the stats in this dictionary, literaly any valid str num pair will be recognised and treated as a stat
+		self.permstats = {'str':stre,'dex':dex,'con':con,'int':inte,'wis':wis,'cha':cha}
+
+		#this dict contains the perminent advantages that are used in the dice rolls of the player
+		#positive numbers mean their taking the highest result from that many dice, neg mean the lowest	
+		self.permadv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}	
+
+		#these are the actual dictionaries that most of our functions use for our stats, they can be changed
+		self.stats = {}
+		self.adv = {}	
+	
+		#this function copies the perminent dicts into the temp dicts		
+		self.reset()
+	
+		#I almost think its worth it to turn each of these into stats in the stat array, perhaps a future project?
+		self.hp = random.randrange(10,lvl*100)
+		self.ac = random.randrange(18-lvl,20)-10
+		self.thaco = 20 - lvl
+		self.name = 'NA'
+		self.lvl = lvl
+	
+		#load ourselfs into the bieng array
+		Bieng.ga.append(self)
+
+	def reset(self):
+		del_list = []
+		#copy over all of the values from permadv
+		for k in self.permadv:
+			self.adv[k] = self.permadv[k]
+
+		#check for any values in the advantage array that are not in the perm array and delete them
+		for k in self.adv:
+			if k not in self.permadv:
+				del_list.append(k)
+		for k in del_list:
+			del self.adv[k]
+	
+		del_list = []
+		for k in self.permstats:
+			self.stats[k] = self.permstats[k]
+		for k in self.stats:
+			if k not in self.permstats:
+				del_list.append(k)
+		for k in del_list:
+			del self.stats[k]
+				
+			
+	def rollHit(self,target):
+		if self.check(['hit','attack','str']) >= self.thaco - target.ac:
+			return True
+		else:
+			return False	
+	def check(self,given_stats,dieType=20):
+		mod = 0
+		for stat in given_stats:
+			if stat in self.stats:
+				mod += floor((self.stats[stat] - 10)/2)
+		adv = 0
+		for stat in given_stats:
+			if stat in self.adv:
+				adv += self.adv[stat]
+		#now return a disadvantaged/advantaged roll
+		return roll(20,adv)+mod
+	def loot(self):
+		#this function returns a string that represents loot that the players can use
+		return makeState(self.lvl)
+	
+	def ToScreen(self,command=['all']):
+		print(self.name)
+		print('-'*len(self.name))
+		if 'hp' in command or 'all' in command:
+			print('hp:' + str(self.hp),end=' ')
+		if 'ac' in command or 'all' in command:
+			print('ac:' + str(self.ac))
+		elif 'hp' in command:
+			#make sure that we print a new line after the hp ac line no matter what
+			print()
+		for stat in self.stats:
+			if stat in command or 'all' in command or 'stats' in command:
+				print(stat + ':' + str(self.stats[stat]))
+		if 'adv' in command or 'all' in command:
+			print(self.adv)
+	def addAdv(self,stat,num):
+		#print our changes to the screen in both cases
+		if stat not in self.adv:
+			self.adv[stat] = num
+			print('[*] set ' + self.name + ' ' + stat + ' to ' + str(self.adv[stat]))	
+			return False
+		self.adv[stat] += num
+		print('[*] set ' + self.name + ' advantaged ' + stat + ' to ' + str(self.adv[stat]))
+		return True
+
+	#this function is used to roll a stat with the advantages of two different stats
+	#it is ment to be a wrapper function ONLY and should not be called outside of the object
+	def statStr(self,perm=False):
+		ret_val = ''
+		
+		if perm:
+			target_dict = self.permstats
+		else:
+			target_dict = self.stats
+		for stat in target_dict:
+			ret_val += stat + ':' + str(target_dict[stat]) + '\n'
+		return ret_val
+
+class Settler(Bieng):
 	#this is a type of AI that will explore around the grid and try and settle down to create a new city
 	count = 0
-	def __init__(self,culture,x=None,y=None):
-		Entity.__init__(self,x,y)
+	def __init__(self,culture,x=None,y=None,lvl=None):
+		if x == None:
+			x = random.randrange(1,21)
+		if y == None:
+			y = random.randrange(1,21)
+		if lvl == None:
+			#settlers should not be intimidating, so they get low levels
+			lvl = random.randrange(1,3)	
+		Bieng.__init__(self,x,y,lvl)
 		self.culture = culture
 		self.name = culture.nameg.makeWord()	
 		Settler.count += 1
 	def AI(self,party):
 		#the settler has no idea where home is, so it wanders aimlessly seaching
-		#for a place to place a new spawner
-		
+		#for a place to place a new spawner	
 		#pick a random valid direction to move
 		x = random.randrange(-1,2)
 		y = random.randrange(-1,2)	
 		self.move(x,y)
+		
 		#so the goal here is to minimise the use of the node.hostil variable
 		#as we have to create a whole new node to use it
 		#so only make a new node when we dont have more cities to generate
 		if Town.count < 20:	
 			#TODO:Settlers need to run into players while their out exploring and alert them of their presence
 			#otherwise theres not really a point in having any settlers wandering the wastes
-			if random.randrange(1,100) < make_node.node(self.x,self.y).hostil:	
-				return Town(self.culture,self.x,self.y)
+			if random.randrange(1,100) < make_node.node(self.x,self.y).hostil:		
+				Town(self.culture,self.x,self.y)
+				return True
 			#delete ourselfs if we fail our survival check
 		if random.randrange(1,101) < 30:
 			#remove a count for the settler
-			self.count -= 1	
+			self.count -= 1
+			#request that the AI handler delete us	
 			return -1
 class Town(Entity):
 	#each town needs to have a description and a culture
 	#what would the culture look like?`
 	count = 0
+	ga = []
+	ea = []
 	def __init__(self,culture,x=None,y=None,name=None):
 		#steal the entity init for x and y
 		Entity.__init__(self,x,y)
@@ -238,14 +376,17 @@ class Town(Entity):
 		#store the hostility of a node so that way we dont have to re-compute EVERY node that has a town in it every time 
 		#we run the town AI
 		self.hostil = make_node.node(self.x,self.y).hostil	
-		#incriment the total of all of the towns, that way the game knows when to STOP spawning towns
+		
+		#incriment the total of all of the towns, that way the game knows when to STOP spawning towns and add ourselfs to the town array
 		Town.count += 1
+		Town.ga.append(self)
 	def AI(self,party):
 		#have a random chance of spawning a settler based on the hostlity of the node the town finds itself in	
 
 		#there should never be very many settlers on the board at once
 		if Settler.count < 5 and random.randrange(1,101) < self.hostil:	
-			return Settler(self.culture,self.x,self.y)
+			Settler(self.culture,self.x,self.y)
+			return True
 		if party.x == self.x and party.y == self.y:
 			#the party found our town!, tell them whats up
 			#this generation could probably use some more work, but for now its ok
@@ -338,126 +479,6 @@ class Town(Entity):
 			else:
 				pass
 			
-class Bieng(Entity):
-	#this class represents anything that the players can through damage at
-	def __init__(self,x,y,lvl):
-		self.actions = 2
-		self.x = x
-		self.y = y
-
-		if lvl <= 1:
-			lvl = 2
-		#TODO: need a better system for incorperating the level into the stat
-		stre = makeStat() + random.randrange(1,lvl)
-		dex = makeStat() + random.randrange(1,lvl)
-		con = makeStat() + random.randrange(1,lvl)
-		inte = makeStat() + random.randrange(1,lvl)
-		wis = makeStat() + random.randrange(1,lvl)
-		cha = makeStat() + random.randrange(1,lvl)	
-		
-		#NOTE:the following two dictionarys should ALMOST never be changed, and if they are changed they should have a way to be changed back
-		#a dictionary array where we store stats for use later
-		#NOTE: theres nothing special about the stats in this dictionary, literaly any valid str num pair will be recognised and treated as a stat
-		self.permstats = {'str':stre,'dex':dex,'con':con,'int':inte,'wis':wis,'cha':cha}
-
-		#this dict contains the perminent advantages that are used in the dice rolls of the player
-		#positive numbers mean their taking the highest result from that many dice, neg mean the lowest	
-		self.permadv = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}	
-
-		#these are the actual dictionaries that most of our functions use for our stats, they can be changed
-		self.stats = {}
-		self.adv = {}	
-	
-		#this function copies the perminent dicts into the temp dicts		
-		self.reset()
-	
-		#I almost think its worth it to turn each of these into stats in the stat array, perhaps a future project?
-		self.hp = random.randrange(10,lvl*100)
-		self.ac = random.randrange(18-lvl,20)-10
-		self.thaco = 20 - lvl
-		self.name = 'NA'
-		self.lvl = lvl
-		
-	def reset(self):
-		del_list = []
-		#copy over all of the values from permadv
-		for k in self.permadv:
-			self.adv[k] = self.permadv[k]
-
-		#check for any values in the advantage array that are not in the perm array and delete them
-		for k in self.adv:
-			if k not in self.permadv:
-				del_list.append(k)
-		for k in del_list:
-			del self.adv[k]
-	
-		del_list = []
-		for k in self.permstats:
-			self.stats[k] = self.permstats[k]
-		for k in self.stats:
-			if k not in self.permstats:
-				del_list.append(k)
-		for k in del_list:
-			del self.stats[k]
-				
-			
-	def rollHit(self,target):
-		if self.check(['hit','attack','str']) >= self.thaco - target.ac:
-			return True
-		else:
-			return False	
-	def check(self,given_stats,dieType=20):
-		mod = 0
-		for stat in given_stats:
-			if stat in self.stats:
-				mod += floor((self.stats[stat] - 10)/2)
-		adv = 0
-		for stat in given_stats:
-			if stat in self.adv:
-				adv += self.adv[stat]
-		#now return a disadvantaged/advantaged roll
-		return roll(20,adv)+mod
-	def loot(self):
-		#this function returns a string that represents loot that the players can use
-		return makeState(self.lvl)
-	
-	def ToScreen(self,command=['all']):
-		print(self.name)
-		print('-'*len(self.name))
-		if 'hp' in command or 'all' in command:
-			print('hp:' + str(self.hp),end=' ')
-		if 'ac' in command or 'all' in command:
-			print('ac:' + str(self.ac))
-		elif 'hp' in command:
-			#make sure that we print a new line after the hp ac line no matter what
-			print()
-		for stat in self.stats:
-			if stat in command or 'all' in command or 'stats' in command:
-				print(stat + ':' + str(self.stats[stat]))
-		if 'adv' in command or 'all' in command:
-			print(self.adv)
-	def addAdv(self,stat,num):
-		#print our changes to the screen in both cases
-		if stat not in self.adv:
-			self.adv[stat] = num
-			print('[*] set ' + self.name + ' ' + stat + ' to ' + str(self.adv[stat]))	
-			return False
-		self.adv[stat] += num
-		print('[*] set ' + self.name + ' advantaged ' + stat + ' to ' + str(self.adv[stat]))
-		return True
-
-	#this function is used to roll a stat with the advantages of two different stats
-	#it is ment to be a wrapper function ONLY and should not be called outside of the object
-	def statStr(self,perm=False):
-		ret_val = ''
-		
-		if perm:
-			target_dict = self.permstats
-		else:
-			target_dict = self.stats
-		for stat in target_dict:
-			ret_val += stat + ':' + str(target_dict[stat]) + '\n'
-		return ret_val
 	
 class Player(Bieng):
 	def __init__(self,name=None):
@@ -678,8 +699,14 @@ class Party(Entity):
 if __name__ == '__main__':
 	c = Culture()
 	t = Town(c)
+	t2 = Town(c)
+	t3 = Town(c)
 	print(t.desc)
-	a = Bieng(1,1,1)
-	b = Bieng(1,1,1)
-	p = Party()
-	t.shell([a,b],p,[c])
+	print(t2.desc)
+	print(t3.desc)
+	for town in Town.arr:
+		print(town.desc)
+	#a = Bieng(1,1,1)
+	#b = Bieng(1,1,1)
+	#$p = Party()
+	#t.shell([a,b],p,[c])
