@@ -35,8 +35,7 @@ def updateArr(grid_arr,entity_arr,player):
 	#theres no need to check the entities we already appended	
 	i = 0
 	while i < len(grid_arr)-appended:	
-		if grid_arr[i].x == player.x and grid_arr[i].y == player.y:
-			print('[*] found a matching entity!')
+		if grid_arr[i].x == player.x and grid_arr[i].y == player.y:	
 			entity_arr.append(grid_arr[i])
 			#remove the entity from the grid array after placing it into the entity array
 			del grid_arr[i]
